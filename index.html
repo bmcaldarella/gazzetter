@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="libs/css/style.css" />
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="bootstrap-5.3.6-dist/css/bootstrap.min.css" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="leaflet/leaflet.css" />
+
+
+  <title>Gazzetter</title>
+</head>
+
+<body>
+
+  <!-- navbar  -->
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/index.html">Gazzetter</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <!--navbar collapse -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+          <li class="nav-item">
+            <select id="countrySelect" class="form-select">
+              <option value="">Select Country</option>
+            </select>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- modal info country -->
+
+  <button id="countryInfoBtn" data-bs-toggle="modal" data-bs-target="#exampleModalCenter" >
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <path stroke-linecap="round" d="M12 7h.01" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10 11h2v5m-2 0h4" />
+      </g>
+    </svg>
+    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+    <path
+      d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+    </svg>
+  </button>
+
+  <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" style="margin-left: 2.0rem; max-width: 400px;">
+      <div class="modal-content bg-dark text-white">
+
+        <div class="modal-header">
+          <h4 class="title-modal">Country Information</h4>
+        </div>
+
+        <div class="modal-body">
+          <div id="infoCard"></div>
+          
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+
+  <!--weather Modal -->
+
+
+  <button id="weatherBtn" data-bs-toggle="modal" data-bs-target="#weatherModal" >
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+  <path d="M6.995 12a5 5 0 0 1 9.905-1.293A4.5 4.5 0 1 1 17.5 19H7a5 5 0 0 1-.005-7zM19 17a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 0-1.936.897.75.75 0 0 1-1.316-.548 3.5 3.5 0 1 0-6.93 1.278A4 4 0 1 0 7 17h12z"/>
+</svg>
+  </button>
+  <div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" style="margin-left: 2.0rem; max-width: 400px;">
+      <div class="modal-content bg-dark text-white" id="content-weather">
+
+        <div class="modal-header">
+          <h4 class="title-modal">Current weather</h4>
+        </div>
+
+        <div class="modal-content bg-dark text-white">
+          <div id="weather"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+
+  <!--Nearby Modal -->
+
+<button id="nearbyBtn" class="btn-map">
+  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-geo-alt"
+    viewBox="0 0 16 16">
+    <path d="M12.166 8.94c-.626 1.077-1.468 2.272-2.368 3.325a30.074 30.074 0 0 1-1.483 1.605.5.5 0 0 1-.63.056.5.5 0 0 1-.063-.056 30.078 30.078 0 0 1-1.483-1.605C5.303 11.212 4.46 10.017 3.834 8.94 3.206 7.86 2.75 6.82 2.75 6A5.25 5.25 0 1 1 13.25 6c0 .82-.456 1.86-1.084 2.94zM8 15s6-5.686 6-9A6 6 0 0 0 2 6c0 3.314 6 9 6 9z" />
+    <path d="M8 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+  </svg>
+</button>
+
+
+<div class="modal fade" id="nearbyModal" tabindex="-1" aria-labelledby="nearbyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" style="margin-left: 2rem; max-width: 400px;">
+    <div class="modal-content bg-dark text-white" id="content-nearby">
+      <div class="modal-header">
+        <h4 class="title-modal">Lugares cercanos</h4>
+      </div>
+      <div class="modal-body">
+        <div id="output">Cargando...</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- Map  -->
+  <div id="map"></div>
+  <!-- Bootstrap JS -->
+  <script src="bootstrap-5.3.6-dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Jqery -->
+  <script src="libs/js/jquery-2.2.3.min.js"></script>
+  <!-- Leaflet JS -->
+  <script src="leaflet/leaflet.js"></script>
+  <script src="libs/js/main.js" defer></script>
+
+
+</body>
+
+</html>

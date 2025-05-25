@@ -1,0 +1,61 @@
+*{
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+
+#map {
+  position: relative;
+  height: 90vh;
+}
+.modal-backdrop {
+  z-index: 1040;
+}
+
+#countryInfoBtn,
+#weatherBtn,
+#nearbyBtn{
+  color: rgb(0, 0, 0);
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 0.4px solid rgba(0, 0, 255, 0.3);
+  border-radius: 5px;
+  padding: 5px;
+  position: absolute;
+  top: 12rem;       
+  left: 0.8rem;     
+  z-index: 1000;   
+  font-weight: bold;
+  
+}
+
+
+#weatherBtn{
+  top: 15rem;     
+}
+
+#nearbyBtn{
+  top: 18rem;       
+}
+
+
+
+.title-modal{
+  text-align: center;
+  padding: 10px;
+  font-size: 20px;
+ 
+}
+
+
+.modal-header{
+  margin: 0 auto;
+}
+.modal-body{
+  text-align: center;
+  padding: 20px;
+
+
+}
+#weather{
+  padding: 70px;
+
+}
