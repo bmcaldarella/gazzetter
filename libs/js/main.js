@@ -8,6 +8,7 @@ $(document).ready(function () {
   let locationMarker;
   let locationCircle;
   let capitalMarker;
+  let poiClusterGroup = L.markerClusterGroup();
 
 
 
@@ -19,7 +20,7 @@ $(document).ready(function () {
       iconAnchor: [40, 40],
       popupAnchor: [0, -30]
     }),
-      
+
     village: L.icon({
       iconUrl: 'src/village.svg',
       iconSize: [40, 340],
@@ -122,6 +123,7 @@ $(document).ready(function () {
 
         // centro map in my location
         map.setView([lat, lon], 18);
+        map.addLayer(poiClusterGroup);
 
         // delete previous markers
         if (window.locationMarker) map.removeLayer(window.locationMarker);
@@ -135,7 +137,7 @@ $(document).ready(function () {
           .addTo(map)
 
 
-        // Círculo
+        // Círcle around my location
         window.locationCircle = L.circle([lat, lon], {
           color: '#4A90E2',
           fillColor: '#4A90E2',
@@ -197,12 +199,42 @@ $(document).ready(function () {
     initMap([-34.6037, -58.3816], false);
   }
 
+  let ligthMode ;
+  let darkMode;
+
   function initMap(coords, showCircle) {
     map = L.map('map').setView(coords, 2);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+   ligthMode= L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 13,
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
+
+    //dark map toggle 
+
+    $("#toggleDarkMode").on("click", function () {
+      const button =  $("#toggleDarkMode");
+      const svgIcon = $("#svg-color");
+      if (darkMode) {
+        map.removeLayer(darkMode);
+        map.addLayer(ligthMode);
+        darkMode = null;
+               button.css("background-color", "black");
+               svgIcon.attr("fill", "white");
+
+
+      } else {
+        darkMode = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          maxZoom: 12,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+         
+        }).addTo(map);
+        map.removeLayer(ligthMode);
+         button.css("background-color", "white");
+          svgIcon.attr("fill", "black");
+      }
+    });
+
+
 
     L.marker(coords).addTo(map)
       .bindPopup("<b>Your current location</b><br>Lat: " + coords[0] + "<br>Lon: " + coords[1])
@@ -261,51 +293,43 @@ $(document).ready(function () {
         }
       });
 
-      // También usar OpenCage para mostrar info más rica
-$.ajax({
-  url: 'libs/php/getOpenCageInfo.php',
-  method: 'GET',
-  data: {
-    lat: lat,
-    lon: lon
-  },
-  dataType: 'json',
-  success: function (data) {
-    if (data.results && data.results.length > 0) {
-      const result = data.results[0];
-      const fullLocation = result.formatted;
-      const components = result.components;
+      // show places lat, lon);
+      $.ajax({
+        url: 'libs/php/getOpenCageInfo.php',
+        method: 'GET',
+        data: {
+          lat: lat,
+          lon: lon
+        },
+        dataType: 'json',
+        success: function (data) {
+          if (data.results && data.results.length > 0) {
+            const result = data.results[0];
+            const fullLocation = result.formatted;
+            const components = result.components;
 
-      console.log("📍 OpenCage:", fullLocation);
+            console.log("📍 OpenCage:", fullLocation);
 
-      if (clickMarker) {
-        const popupText = `
+            if (clickMarker) {
+              const popupText = `
   <b>${city}, ${countryName}</b><br>
   OpenCage: ${fullLocation}<br>
   Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}
 `;
-clickMarker.bindPopup(popupText).openPopup();
-      }
-    }
-  },
-  error: function () {
-    console.warn("OpenCage API call failed.");
-  }
-});
+              clickMarker.bindPopup(popupText).openPopup();
+            }
+          }
+        },
+        error: function () {
+          console.warn("OpenCage API call failed.");
+        }
+      });
 
     });
   }
 
   function mostrarLugaresDeInteres(lat, lon) {
-    poiMarkers.forEach(marker => map.removeLayer(marker));
-    poiMarkers = [];
-
-    const poiIcon = L.icon({
-      iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
-      iconSize: [40, 40],
-      iconAnchor: [15, 30],
-      popupAnchor: [0, -30]
-    });
+    poiClusterGroup.clearLayers(); 
 
     $.ajax({
       url: `https://secure.geonames.org/findNearbyWikipediaJSON?lat=${lat}&lng=${lon}&username=bmcaldarella`,
@@ -317,44 +341,29 @@ clickMarker.bindPopup(popupText).openPopup();
             const title = item.title.toLowerCase();
             const summary = (item.summary || "").toLowerCase();
 
+            if (title.includes("museum") || summary.includes("museum")) icon = icons.museum;
+            else if (title.includes("airport") || summary.includes("airport")) icon = icons.airport;
+            else if (title.includes("church") || summary.includes("church")) icon = icons.church;
+            else if (title.includes("town") || summary.includes("town")) icon = icons.town;
+            else if (title.includes("hotel") || summary.includes("hotel")) icon = icons.hotel;
+            else if (title.includes("castle") || summary.includes("castle")) icon = icons.castle;
+            else if (title.includes("monument") || summary.includes("monument")) icon = icons.monument;
+            else if (title.includes("bridge") || summary.includes("bridge")) icon = icons.bridge;
+            else if (title.includes("palace") || summary.includes("palace")) icon = icons.palace;
+            else if (title.includes("park") || summary.includes("park")) icon = icons.park;
+            else if (title.includes("village") || summary.includes("village")) icon = icons.village;
 
-            if (title.includes("museum") || summary.includes("museum")) {
-              icon = icons.museum;
-            } else if (title.includes("airport") || summary.includes("airport")) {
-              icon = icons.airport;
-            } else if (title.includes("church") || summary.includes("church")) {
-              icon = icons.church;
-            } else if (title.includes("town") || summary.includes("town")) {
-              icon = icons.town;
-            } else if (title.includes("hotel") || summary.includes("hotel")) {
-              icon = icons.hotel;
-            } else if (title.includes("castle") || summary.includes("castle")) {
-              icon = icons.castle;
-            }
-            else if (title.includes("monument") || summary.includes("monument")) {
-              icon = icons.monument;
-            }
-            else if (title.includes("bridge") || summary.includes("bridge")) {
-              icon = icons.bridge;
-            }
-            else if (title.includes("palace") || summary.includes("palace")) {
-              icon = icons.palace;
-            }
-            else if (title.includes("park") || summary.includes("park")) {
-              icon = icons.park;
-            }else if (title.includes("village") || summary.includes("village")) {
-              icon = icons.village;
-            }
-
-            const marker = L.marker([item.lat, item.lng], { icon }).addTo(map)
+            const marker = L.marker([item.lat, item.lng], { icon })
               .bindPopup(`<b>${item.title}</b><br>${item.summary}<br><a href="https://${item.wikipediaUrl}" target="_blank">Ver más</a>`);
-            poiMarkers.push(marker);
+
+            poiClusterGroup.addLayer(marker); 
           });
 
+          map.addLayer(poiClusterGroup); // get sure to add the cluster group to the map
         }
       },
       error: function () {
-        console.log(Error);
+        console.log("Error loading POIs");
       }
     });
   }
@@ -411,7 +420,7 @@ clickMarker.bindPopup(popupText).openPopup();
     window.selectedLon = lon;
     window.selectedCountryCode = selectedISO;
 
-    // Mostrar marcador en la capital del país
+    // switch to the capital marker
     if (capitalMarker) {
       map.removeLayer(capitalMarker);
     }
@@ -425,42 +434,45 @@ clickMarker.bindPopup(popupText).openPopup();
       })
     }).addTo(map).bindPopup(`<strong>Capital</strong><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`);
 
-    mostrarLugaresDeInteres(lat, lon); // ✅ Solo una llamada aquí
+    mostrarLugaresDeInteres(lat, lon); 
 
-    // ✅ Zoom automático a los marcadores si hay
     setTimeout(() => {
       if (poiMarkers.length > 0) {
         const group = new L.featureGroup(poiMarkers);
         map.fitBounds(group.getBounds());
       }
-    }, 1000); // ⚠️ Un pequeño delay ayuda a que se agreguen los markers antes del zoom
+    }, 1000); 
   });
-$("#weatherBtn").on("click", function () {
-  if (!window.selectedLat || !window.selectedLon) {
-    alert("Select a location first.");
-    return;
-  }
+  $("#weatherBtn").on("click", function (e) {
+    if (!window.selectedLat || !window.selectedLon) {
+       e.preventDefault();
+      alert("Select a location first.");
+     
+    
 
-  // Obtener clima actual
-  $.ajax({
-    url: "libs/php/getWeather.php",
-    type: "GET",
-    data: {
-      lat: window.selectedLat,
-      lon: window.selectedLon
-    },
-    dataType: "json",
-    success: function (weatherData) {
-      const icon = weatherData.weather[0].icon;
-      const description = weatherData.weather[0].description;
-      const temp = Math.round(weatherData.main.temp);
-      const feelsLike = Math.round(weatherData.main.feels_like);
-      const maxTemp = Math.round(weatherData.main.temp_max);
-      const minTemp = Math.round(weatherData.main.temp_min);
-      const city = weatherData.name;
-      const country = weatherData.sys.country;
+      return;
+    }
 
-      const html = `
+    // Get current weather
+    $.ajax({
+      url: "libs/php/getWeather.php",
+      type: "GET",
+      data: {
+        lat: window.selectedLat,
+        lon: window.selectedLon
+      },
+      dataType: "json",
+      success: function (weatherData) {
+        const icon = weatherData.weather[0].icon;
+        const description = weatherData.weather[0].description;
+        const temp = Math.round(weatherData.main.temp);
+        const feelsLike = Math.round(weatherData.main.feels_like);
+        const maxTemp = Math.round(weatherData.main.temp_max);
+        const minTemp = Math.round(weatherData.main.temp_min);
+        const city = weatherData.name;
+        const country = weatherData.sys.country;
+
+        const html = `
         <div class="text-center mb-3">
           <h5>${city}, ${country}</h5>
           <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${description}" />
@@ -469,51 +481,54 @@ $("#weatherBtn").on("click", function () {
           <p>Max: ${maxTemp}°C / Min: ${minTemp}°C</p>
         </div>
       `;
-      $('#weather').html(html);
-    },
-    error: function () {
-      $('#weather').html("<p>Error loading current weather.</p>");
-    }
-  });
+        $('#weather').html(html);
+                 const modal = new bootstrap.Modal(document.getElementById('weatherModal'));
+          modal.show();
 
-  // Obtener forecast
-  $.ajax({
-    url: "libs/php/getForecast.php",
-    type: "GET",
-    data: {
-      lat: window.selectedLat,
-      lon: window.selectedLon
-    },
-    dataType: "json",
-    success: function (forecastData) {
-      const list = forecastData.list;
-      let forecastHTML = "";
+      },
+      error: function () {
+        $('#weather').html("<p>Error loading current weather.</p>");
+      }
+    });
 
-      // Mostramos 1 cada 8 (aprox. 1 por día a la misma hora)
-      for (let i = 0; i < list.length; i += 8) {
-        const f = list[i];
-        const date = new Date(f.dt * 1000);
-        const day = date.toLocaleDateString();
-        const icon = f.weather[0].icon;
-        const desc = f.weather[0].description;
-        const temp = Math.round(f.main.temp);
+    // Get forecast
+    $.ajax({
+      url: "libs/php/getForecast.php",
+      type: "GET",
+      data: {
+        lat: window.selectedLat,
+        lon: window.selectedLon
+      },
+      dataType: "json",
+      success: function (forecastData) {
+        const list = forecastData.list;
+        let forecastHTML = "";
 
-        forecastHTML += `
+     
+        for (let i = 0; i < list.length; i += 8) {
+          const f = list[i];
+          const date = new Date(f.dt * 1000);
+          const day = date.toLocaleDateString();
+          const icon = f.weather[0].icon;
+          const desc = f.weather[0].description;
+          const temp = Math.round(f.main.temp);
+
+          forecastHTML += `
           <div class="mb-2 p-2 border border-secondary rounded">
             <strong>${day}</strong><br>
             <img src="https://openweathermap.org/img/wn/${icon}.png" alt="${desc}" />
             ${desc}, ${temp}°C
           </div>
         `;
-      }
+        }
 
-      $('#forecastBody').html(forecastHTML);
-    },
-    error: function () {
-      $('#forecastBody').html("<p>Error loading forecast.</p>");
-    }
+        $('#forecastBody').html(forecastHTML);
+      },
+      error: function () {
+        $('#forecastBody').html("<p>Error loading forecast.</p>");
+      }
+    });
   });
-});
 
   $("#nearbyBtn").on("click", function () {
     if (!window.selectedLat || !window.selectedLon) {
@@ -606,6 +621,9 @@ $("#weatherBtn").on("click", function () {
       `;
 
         $('#infoCard').html(html);
+                         const modal = new bootstrap.Modal(document.getElementById('exampleModalCenter'));
+          modal.show();
+
 
         $('#convertBtn').on('click', function () {
           const amount = parseFloat($('#amountInput').val());

@@ -9,6 +9,9 @@
   <link rel="stylesheet" href="bootstrap-5.3.6-dist/css/bootstrap.min.css" />
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="leaflet/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
 
 
   <title>Gazzetter</title>
@@ -38,9 +41,21 @@
     </div>
   </nav>
 
+  <!-- toggle dark -->
+<button id="toggleDarkMode" class="btn btn-dark" >
+    <svg id="svg-color" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
+      <path
+        d="M6.5 0a6.5 6.5 0 1 0 0 13A6.5 6.5 0 0 0 6.5 0zM1.5 6.5a5 5 0 1 1 10 0A5 5 0 0 1 1.5 6.5z" />
+      <path
+        d="M8.75.25a7.25 7.25 0 1 1-14.5-.001A7.25 7.25 0 0 1 8.75.25zm-7.25-.25a8.25 8.25 0 1 0 .001-16.501A8.25 8.25 0 0 0 .5-.001z" />
+    </svg>
+
+   </button>
+
+
   <!-- modal info country -->
 
-  <button id="countryInfoBtn" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+  <button id="countryInfoBtn"  data-bs-target="#exampleModalCenter">
     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24">
       <g fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10" />
@@ -80,37 +95,38 @@
 
   <!--weather Modal -->
 
-<!-- Botón para abrir el modal -->
-<button id="weatherBtn" data-bs-toggle="modal" data-bs-target="#weatherModal">
-  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M6.995 12a5 5 0 0 1 9.905-1.293A4.5 4.5 0 1 1 17.5 19H7a5 5 0 0 1-.005-7zM19 17a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 0-1.936.897.75.75 0 0 1-1.316-.548 3.5 3.5 0 1 0-6.93 1.278A4 4 0 1 0 7 17h12z" />
-  </svg>
-</button>
+  <!-- Botón para abrir el modal -->
+  <button id="weatherBtn"  data-bs-target="#weatherModal">
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+      <path
+        d="M6.995 12a5 5 0 0 1 9.905-1.293A4.5 4.5 0 1 1 17.5 19H7a5 5 0 0 1-.005-7zM19 17a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 0-1.936.897.75.75 0 0 1-1.316-.548 3.5 3.5 0 1 0-6.93 1.278A4 4 0 1 0 7 17h12z" />
+    </svg>
+  </button>
 
-<!-- Modal combinado -->
-<div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable" style="margin-left: 2rem; max-width: 400px;">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h4 class="modal-title">Weather Info</h4>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <!-- Clima actual -->
-        <div id="weather"></div>
-        <hr class="bg-secondary my-3">
-        <!-- Previsión -->
-        <div>
-          <h5 class="text-white mb-2">5-Day Forecast</h5>
-          <div id="forecastBody"></div>
+  <!-- Modal combinado -->
+  <div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" style="margin-left: 2rem; max-width: 400px;">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h4 class="modal-title">Weather Info</h4>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <div class="modal-body">
+          <!-- Clima actual -->
+          <div id="weather"></div>
+          <hr class="bg-secondary my-3">
+          <!-- Previsión -->
+          <div>
+            <h5 class="text-white mb-2">5-Day Forecast</h5>
+            <div id="forecastBody"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
 
 
@@ -141,6 +157,7 @@
       </div>
     </div>
   </div>
+
 
   <button id="myLocationBtn" class="btn-map">
     <svg version="1.1" id="Icon_Set" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 64 64"
@@ -187,6 +204,8 @@
   <!-- Leaflet JS -->
   <script src="leaflet/leaflet.js"></script>
   <script src="libs/js/main.js" defer></script>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
 
 
 </body>

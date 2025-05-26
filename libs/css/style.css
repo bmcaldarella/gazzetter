@@ -26,10 +26,18 @@
   left: 0.8rem;     
   z-index: 1000;   
   font-weight: bold;
+  cursor: pointer;
+ 
   
 }
 
-
+#toggleDarkMode{
+  padding: 5px;
+  position: absolute;
+  top: 9rem;       
+  left: 0.8rem;     
+  z-index: 1000;   
+}
 #weatherBtn{
   top: 15rem;     
 }
