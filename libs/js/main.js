@@ -4,106 +4,181 @@ $(document).ready(function () {
   let borderLayer;
   let clickMarker;
   let poiMarkers = [];
+  let cityBorderLayer;
+  let locationMarker;
+  let locationCircle;
+  let capitalMarker;
+  let capitalBorderCircle;
+
+
 
   //icons
   const icons = {
     museum: L.icon({
       iconUrl: 'src/museum.png',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconSize: [40, 340],
+      iconAnchor: [40, 40],
       popupAnchor: [0, -30]
     }),
+
+    village: L.icon({
+      iconUrl: 'src/village.svg',
+      iconSize: [40, 340],
+      iconAnchor: [40, 40],
+      popupAnchor: [0, -30]
+    }),
+
     airport: L.icon({
       iconUrl: 'src/airport.png',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconSize: [40, 40],
+      iconAnchor: [40, 30],
       popupAnchor: [0, -30]
     }),
     church: L.icon({
       iconUrl: 'src/church.png',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconSize: [40, 40],
+      iconAnchor: [45, 30],
       popupAnchor: [0, -30]
     }),
-    stadium: L.icon({
+    town: L.icon({
       iconUrl: 'src/stadium.png',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconSize: [40, 34],
+      iconAnchor: [45, 30],
       popupAnchor: [0, -30]
     }),
     hotel: L.icon({
       iconUrl: 'src/hotel.png',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconSize: [40, 40],
+      iconAnchor: [45, 30],
       popupAnchor: [0, -30]
     }),
     default: L.icon({
       iconUrl: 'src/location.gif',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconSize: [40, 40],
+      iconAnchor: [45, 30],
       popupAnchor: [0, -30]
     }),
-    tower: L.icon({
+    castle: L.icon({
       iconUrl: 'src/tower.png',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconSize: [40, 40],
+      iconAnchor: [45, 30],
       popupAnchor: [0, -30]
     }),
     monument: L.icon({
       iconUrl: 'src/monument.png',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconSize: [40, 40],
+      iconAnchor: [45, 30],
       popupAnchor: [0, -30]
     }),
     bridge: L.icon({
-      iconUrl: 'src/bridge.png', 
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconUrl: 'src/bridge.png',
+      iconSize: [40, 34],
+      iconAnchor: [45, 30],
       popupAnchor: [0, -30]
     }),
     palace: L.icon({
       iconUrl: 'src/palace.png',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconSize: [40, 40],
+      iconAnchor: [45, 30],
       popupAnchor: [0, -30]
     }),
     park: L.icon({
       iconUrl: 'src/park.png',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
+      iconSize: [40, 40],
+      iconAnchor: [45, 30],
       popupAnchor: [0, -30]
     }),
 
   };
 
-  let cityBorderLayer; 
+  // show my current location
 
-function mostrarLimiteCiudad(cityName) {
-  $.getJSON('data/cityBoundaries.geojson', function (data) {
-    const cityFeature = data.features.find(
-      feature => feature.properties.NAME.toLowerCase() === cityName.toLowerCase()
-    );
-    console.log("Buscando límite para:", cityName);
-    if (cityFeature) {
-      if (cityBorderLayer) {
-        map.removeLayer(cityBorderLayer);
-      }
+  $("#myLocationBtn").on("click", function () {
+    if (!map) {
+      alert("Map not loaded.");
+      return;
+    }
 
-      cityBorderLayer = L.geoJSON(cityFeature, {
-        style: {
-          color: '#FF5733',
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.1
-        }
-      }).addTo(map);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
 
-      map.fitBounds(cityBorderLayer.getBounds());
+
+        window.selectedLat = lat;
+        window.selectedLon = lon;
+
+
+        $.ajax({
+          url: `https://secure.geonames.org/countryCodeJSON?lat=${lat}&lng=${lon}&username=bmcaldarella`,
+          method: 'GET',
+          success: function (data) {
+            if (data && data.countryCode) {
+              window.selectedCountryCode = data.countryCode;
+            } else {
+              console.warn("Code country not found.");
+            }
+          }
+        });
+
+        // centro map in my location
+        map.setView([lat, lon], 18);
+
+        // delete previous markers
+        if (window.locationMarker) map.removeLayer(window.locationMarker);
+        if (window.locationCircle) map.removeLayer(window.locationCircle);
+
+        // Mark location
+        window.locationMarker = L.marker([lat, lon])
+
+          .bindPopup(`<b>Your current location</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`)
+          .openPopup()
+          .addTo(map)
+
+
+        // Círculo
+        window.locationCircle = L.circle([lat, lon], {
+          color: '#4A90E2',
+          fillColor: '#4A90E2',
+          fillOpacity: 0.3,
+          radius: 500
+        }).addTo(map);
+      },
+        function (error) {
+          alert(": " + error.message);
+        });
     } else {
-      console.log('Límite de la ciudad no encontrado: ' + cityName);
+      alert("Location not soported.");
     }
   });
-}
+
+
+  function mostrarLimiteCiudad(cityName) {
+    $.getJSON('data/cityBoundaries.geojson', function (data) {
+      const cityFeature = data.features.find(
+        feature => feature.properties.NAME.toLowerCase() === cityName.toLowerCase()
+      );
+      console.log("Looking limit", cityName);
+      if (cityFeature) {
+        if (cityBorderLayer) {
+          map.removeLayer(cityBorderLayer);
+        }
+
+        cityBorderLayer = L.geoJSON(cityFeature, {
+          style: {
+            color: '#FF5733',
+            weight: 4,
+            opacity: 1,
+            fillOpacity: 0.1
+          }
+        }).addTo(map);
+
+        map.fitBounds(cityBorderLayer.getBounds());
+      } else {
+        console.log('Limit not found: ' + cityName);
+      }
+    });
+  }
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(showPosition, showError);
@@ -124,9 +199,9 @@ function mostrarLimiteCiudad(cityName) {
   }
 
   function initMap(coords, showCircle) {
-    map = L.map('map').setView(coords, 10);
+    map = L.map('map').setView(coords, 2);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
+      maxZoom: 13,
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
@@ -134,14 +209,7 @@ function mostrarLimiteCiudad(cityName) {
       .bindPopup("<b>Your current location</b><br>Lat: " + coords[0] + "<br>Lon: " + coords[1])
       .openPopup();
 
-    if (showCircle) {
-      L.circle(coords, {
-        color: '#4A90E2',
-        fillColor: '#4A90E2',
-        fillOpacity: 0.25,
-        radius: 500
-      }).addTo(map);
-    }
+
 
     map.on('click', function (e) {
       const lat = e.latlng.lat;
@@ -184,7 +252,7 @@ function mostrarLimiteCiudad(cityName) {
                 map.fitBounds(borderLayer.getBounds());
               }
             }
-                mostrarLimiteCiudad(city);
+            mostrarLimiteCiudad(city);
           } else {
             alert("Error.");
           }
@@ -215,17 +283,35 @@ function mostrarLimiteCiudad(cityName) {
           data.geonames.forEach((item) => {
             let icon = icons.default;
             const title = item.title.toLowerCase();
+            const summary = (item.summary || "").toLowerCase();
 
-            if (title.includes("museum")) {
+
+            if (title.includes("museum") || summary.includes("museum")) {
               icon = icons.museum;
-            } else if (title.includes("airport")) {
+            } else if (title.includes("airport") || summary.includes("airport")) {
               icon = icons.airport;
-            } else if (title.includes("church")) {
+            } else if (title.includes("church") || summary.includes("church")) {
               icon = icons.church;
-            } else if (title.includes("stadium")) {
-              icon = icons.stadium;
-            } else if (title.includes("hotel")) {
+            } else if (title.includes("town") || summary.includes("town")) {
+              icon = icons.town;
+            } else if (title.includes("hotel") || summary.includes("hotel")) {
               icon = icons.hotel;
+            } else if (title.includes("castle") || summary.includes("castle")) {
+              icon = icons.castle;
+            }
+            else if (title.includes("monument") || summary.includes("monument")) {
+              icon = icons.monument;
+            }
+            else if (title.includes("bridge") || summary.includes("bridge")) {
+              icon = icons.bridge;
+            }
+            else if (title.includes("palace") || summary.includes("palace")) {
+              icon = icons.palace;
+            }
+            else if (title.includes("park") || summary.includes("park")) {
+              icon = icons.park;
+            } else if (title.includes("village") || summary.includes("village")) {
+              icon = icons.village;
             }
 
             const marker = L.marker([item.lat, item.lng], { icon }).addTo(map)
@@ -258,54 +344,85 @@ function mostrarLimiteCiudad(cityName) {
     }
   });
 
-$("#countrySelect").on("change", function () {
-  const selectedISO = $(this).val();
-  if (!selectedISO || !countryBordersData) return;
+  $("#countrySelect").on("change", function () {
+    const selectedISO = $(this).val();
+    if (!selectedISO || !countryBordersData) return;
 
-  const selectedFeature = countryBordersData.features.find(
-    f => f.properties.iso_a2 === selectedISO
-  );
-  if (!selectedFeature) {
-    alert("Country not found");
-    return;
-  }
-
-  if (borderLayer) borderLayer.remove();
-
-  borderLayer = L.geoJSON(selectedFeature, {
-    style: { color: '#4A90E2', radius: 500 }
-  }).addTo(map);
-
-  map.fitBounds(borderLayer.getBounds());
-
-  let lat, lon;
-
-  if (selectedFeature.properties && selectedFeature.properties.capital_latlng) {
-    lat = selectedFeature.properties.capital_latlng[1]; // lat
-    lon = selectedFeature.properties.capital_latlng[0]; // lon
-  } else {
-    const center = borderLayer.getBounds().getCenter();
-    lat = center.lat;
-    lon = center.lng;
-  }
-
-  window.selectedLat = lat;
-  window.selectedLon = lon;
-  window.selectedCountryCode = selectedISO;
-
-  mostrarLugaresDeInteres(lat, lon); // ✅ Solo una llamada aquí
-
-  // ✅ Zoom automático a los marcadores si hay
-  setTimeout(() => {
-    if (poiMarkers.length > 0) {
-      const group = new L.featureGroup(poiMarkers);
-      map.fitBounds(group.getBounds());
+    const selectedFeature = countryBordersData.features.find(
+      f => f.properties.iso_a2 === selectedISO
+    );
+    if (!selectedFeature) {
+      alert("Country not found");
+      return;
     }
-  }, 1000); // ⚠️ Un pequeño delay ayuda a que se agreguen los markers antes del zoom
-});
+
+    if (borderLayer) borderLayer.remove();
+
+    borderLayer = L.geoJSON(selectedFeature, {
+      style: { color: '#4A90E2', radius: 800 }
+    }).addTo(map);
+
+    map.fitBounds(borderLayer.getBounds());
+
+    let lat, lon;
+
+    if (selectedFeature.properties && selectedFeature.properties.capital_latlng) {
+      lat = selectedFeature.properties.capital_latlng[1]; // lat
+      lon = selectedFeature.properties.capital_latlng[0]; // lon
+    } else {
+      const center = borderLayer.getBounds().getCenter();
+      lat = center.lat;
+      lon = center.lng;
+    }
+
+    window.selectedLat = lat;
+    window.selectedLon = lon;
+    window.selectedCountryCode = selectedISO;
+
+    // Mostrar marcador en la capital del país
+    if (capitalMarker) {
+      if (capitalMarker) map.removeLayer(capitalMarker);
+      if (capitalBorderCircle) map.removeLayer(capitalBorderCircle);
+
+    }
+
+    capitalMarker = L.marker([lat, lon], {
+      icon: L.icon({
+        iconUrl: 'src/city.svg',
+        iconSize: [40, 40],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -30]
+      })
+    }).addTo(map).bindPopup(`<strong>Capital</strong><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`);
+    capitalBorderCircle = L.circleMarker([lat, lon], {
+      radius: 40,
+      color: 'red',
+      weight: 3,
+      fillOpacity: 0
+    }).addTo(map);
+
+    // al pasar el mouse: mostrar borde
+    capitalMarker.on("mouseover", function () {
+      capitalBorderCircle.setStyle({ fillOpacity: 0.3 });
+    });
+
+    // al salir del mouse: ocultar borde
+    capitalMarker.on("mouseout", function () {
+      capitalBorderCircle.setStyle({ fillOpacity: 0 });
+    });
+    mostrarLugaresDeInteres(lat, lon); // ✅ Solo una llamada aquí
+
+    // ✅ Zoom automático a los marcadores si hay
+    setTimeout(() => {
+      if (poiMarkers.length > 0) {
+        const group = new L.featureGroup(poiMarkers);
+        map.fitBounds(group.getBounds());
+      }
+    }, 1000); // ⚠️ Un pequeño delay ayuda a que se agreguen los markers antes del zoom
+  });
   $("#weatherBtn").on("click", function () {
     if (!window.selectedLat || !window.selectedLon) {
-      alert("Por favor, hacé clic en el mapa primero.");
+      alert("Select a  location first.");
       return;
     }
 
@@ -340,7 +457,7 @@ $("#countrySelect").on("change", function () {
 
           capitalMarker = L.marker([capitalLat, capitalLon], {
             icon: L.icon({
-              iconUrl: 'src/city.png',
+              iconUrl: 'src/city.svg',
               iconSize: [50, 50],
               iconAnchor: [15, 30],
               popupAnchor: [0, -30]
@@ -360,16 +477,17 @@ $("#countrySelect").on("change", function () {
         `;
 
         $('#weather').html(html);
+
       },
       error: function () {
-        alert("No se pudo obtener el clima.");
+        alert("Weather not founded.");
       }
     });
   });
 
   $("#nearbyBtn").on("click", function () {
     if (!window.selectedLat || !window.selectedLon) {
-      alert("Por favor, hacé clic en el mapa primero.");
+      alert("Select a location firts.");
       return;
     }
 
@@ -395,22 +513,21 @@ $("#countrySelect").on("change", function () {
           });
           html += '</ul>';
           $('#output').html(html);
+
+          const modal = new bootstrap.Modal(document.getElementById('nearbyModal'));
+          modal.show();
         } else {
-          $('#output').html('<p>No se encontraron lugares cercanos.</p>');
+          alert("No nearby data found.");
         }
-        const modal = new bootstrap.Modal(document.getElementById('nearbyModal'));
-        modal.show();
       },
       error: function () {
-        $('#output').html('<p>Error al obtener lugares cercanos.</p>');
-        const modal = new bootstrap.Modal(document.getElementById('nearbyModal'));
-        modal.show();
+        $('#output').html('<p>Error loading nearby places.</p>');
       }
     });
   });
   $("#countryInfoBtn").on("click", function () {
     if (!window.selectedCountryCode) {
-      alert("Hacé clic en el mapa o seleccioná un país.");
+      alert("Select a country firts.");
       return;
     }
 

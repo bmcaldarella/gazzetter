@@ -6,6 +6,7 @@
 #map {
   position: relative;
   height: 90vh;
+ 
 }
 .modal-backdrop {
   z-index: 1040;
@@ -13,7 +14,8 @@
 
 #countryInfoBtn,
 #weatherBtn,
-#nearbyBtn{
+#nearbyBtn,
+#myLocationBtn{
   color: rgb(0, 0, 0);
   background-color: rgba(255, 255, 255, 0.85);
   border: 0.4px solid rgba(0, 0, 255, 0.3);
@@ -36,7 +38,16 @@
   top: 18rem;       
 }
 
-
+#myLocation,
+#myLocationBtn{
+  width: 40px;
+  height:40px;
+  top: 21rem;
+ 
+}
+#myLocation{
+  right: 140px;
+}
 
 .title-modal{
   text-align: center;
