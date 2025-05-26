@@ -80,32 +80,37 @@
 
   <!--weather Modal -->
 
+<!-- Botón para abrir el modal -->
+<button id="weatherBtn" data-bs-toggle="modal" data-bs-target="#weatherModal">
+  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M6.995 12a5 5 0 0 1 9.905-1.293A4.5 4.5 0 1 1 17.5 19H7a5 5 0 0 1-.005-7zM19 17a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 0-1.936.897.75.75 0 0 1-1.316-.548 3.5 3.5 0 1 0-6.93 1.278A4 4 0 1 0 7 17h12z" />
+  </svg>
+</button>
 
-  <button id="weatherBtn" data-bs-toggle="modal" data-bs-target="#weatherModal">
-    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
-      <path
-        d="M6.995 12a5 5 0 0 1 9.905-1.293A4.5 4.5 0 1 1 17.5 19H7a5 5 0 0 1-.005-7zM19 17a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 0-1.936.897.75.75 0 0 1-1.316-.548 3.5 3.5 0 1 0-6.93 1.278A4 4 0 1 0 7 17h12z" />
-    </svg>
-  </button>
-  <div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable" style="margin-left: 2.0rem; max-width: 400px;">
-      <div class="modal-content bg-dark text-white" id="content-weather">
-
-        <div class="modal-header">
-          <h4 class="title-modal">Current weather</h4>
+<!-- Modal combinado -->
+<div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" style="margin-left: 2rem; max-width: 400px;">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h4 class="modal-title">Weather Info</h4>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Clima actual -->
+        <div id="weather"></div>
+        <hr class="bg-secondary my-3">
+        <!-- Previsión -->
+        <div>
+          <h5 class="text-white mb-2">5-Day Forecast</h5>
+          <div id="forecastBody"></div>
         </div>
-
-        <div class="modal-content bg-dark text-white">
-          <div id="weather"></div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
+</div>
 
 
 

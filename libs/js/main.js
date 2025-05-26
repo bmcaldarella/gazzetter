@@ -8,7 +8,6 @@ $(document).ready(function () {
   let locationMarker;
   let locationCircle;
   let capitalMarker;
-  let capitalBorderCircle;
 
 
 
@@ -20,7 +19,7 @@ $(document).ready(function () {
       iconAnchor: [40, 40],
       popupAnchor: [0, -30]
     }),
-
+      
     village: L.icon({
       iconUrl: 'src/village.svg',
       iconSize: [40, 340],
@@ -261,6 +260,39 @@ $(document).ready(function () {
           alert("Error");
         }
       });
+
+      // También usar OpenCage para mostrar info más rica
+$.ajax({
+  url: 'libs/php/getOpenCageInfo.php',
+  method: 'GET',
+  data: {
+    lat: lat,
+    lon: lon
+  },
+  dataType: 'json',
+  success: function (data) {
+    if (data.results && data.results.length > 0) {
+      const result = data.results[0];
+      const fullLocation = result.formatted;
+      const components = result.components;
+
+      console.log("📍 OpenCage:", fullLocation);
+
+      if (clickMarker) {
+        const popupText = `
+  <b>${city}, ${countryName}</b><br>
+  OpenCage: ${fullLocation}<br>
+  Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}
+`;
+clickMarker.bindPopup(popupText).openPopup();
+      }
+    }
+  },
+  error: function () {
+    console.warn("OpenCage API call failed.");
+  }
+});
+
     });
   }
 
@@ -310,7 +342,7 @@ $(document).ready(function () {
             }
             else if (title.includes("park") || summary.includes("park")) {
               icon = icons.park;
-            } else if (title.includes("village") || summary.includes("village")) {
+            }else if (title.includes("village") || summary.includes("village")) {
               icon = icons.village;
             }
 
@@ -381,9 +413,7 @@ $(document).ready(function () {
 
     // Mostrar marcador en la capital del país
     if (capitalMarker) {
-      if (capitalMarker) map.removeLayer(capitalMarker);
-      if (capitalBorderCircle) map.removeLayer(capitalBorderCircle);
-
+      map.removeLayer(capitalMarker);
     }
 
     capitalMarker = L.marker([lat, lon], {
@@ -394,22 +424,7 @@ $(document).ready(function () {
         popupAnchor: [0, -30]
       })
     }).addTo(map).bindPopup(`<strong>Capital</strong><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`);
-    capitalBorderCircle = L.circleMarker([lat, lon], {
-      radius: 40,
-      color: 'red',
-      weight: 3,
-      fillOpacity: 0
-    }).addTo(map);
 
-    // al pasar el mouse: mostrar borde
-    capitalMarker.on("mouseover", function () {
-      capitalBorderCircle.setStyle({ fillOpacity: 0.3 });
-    });
-
-    // al salir del mouse: ocultar borde
-    capitalMarker.on("mouseout", function () {
-      capitalBorderCircle.setStyle({ fillOpacity: 0 });
-    });
     mostrarLugaresDeInteres(lat, lon); // ✅ Solo una llamada aquí
 
     // ✅ Zoom automático a los marcadores si hay
@@ -420,70 +435,85 @@ $(document).ready(function () {
       }
     }, 1000); // ⚠️ Un pequeño delay ayuda a que se agreguen los markers antes del zoom
   });
-  $("#weatherBtn").on("click", function () {
-    if (!window.selectedLat || !window.selectedLon) {
-      alert("Select a  location first.");
-      return;
+$("#weatherBtn").on("click", function () {
+  if (!window.selectedLat || !window.selectedLon) {
+    alert("Select a location first.");
+    return;
+  }
+
+  // Obtener clima actual
+  $.ajax({
+    url: "libs/php/getWeather.php",
+    type: "GET",
+    data: {
+      lat: window.selectedLat,
+      lon: window.selectedLon
+    },
+    dataType: "json",
+    success: function (weatherData) {
+      const icon = weatherData.weather[0].icon;
+      const description = weatherData.weather[0].description;
+      const temp = Math.round(weatherData.main.temp);
+      const feelsLike = Math.round(weatherData.main.feels_like);
+      const maxTemp = Math.round(weatherData.main.temp_max);
+      const minTemp = Math.round(weatherData.main.temp_min);
+      const city = weatherData.name;
+      const country = weatherData.sys.country;
+
+      const html = `
+        <div class="text-center mb-3">
+          <h5>${city}, ${country}</h5>
+          <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${description}" />
+          <p><strong>${description}</strong></p>
+          <p>Temp: ${temp}°C (feels like ${feelsLike}°C)</p>
+          <p>Max: ${maxTemp}°C / Min: ${minTemp}°C</p>
+        </div>
+      `;
+      $('#weather').html(html);
+    },
+    error: function () {
+      $('#weather').html("<p>Error loading current weather.</p>");
     }
+  });
 
-    $.ajax({
-      url: "libs/php/getWeather.php",
-      type: "GET",
-      data: {
-        lat: window.selectedLat,
-        lon: window.selectedLon
-      },
-      dataType: "json",
-      success: function (weatherData) {
-        const icon = weatherData.weather[0].icon;
-        const description = weatherData.weather[0].description;
-        const temp = Math.round(weatherData.main.temp);
-        const feelsLike = Math.round(weatherData.main.feels_like);
-        const maxTemp = Math.round(weatherData.main.temp_max);
-        const minTemp = Math.round(weatherData.main.temp_min);
-        const city = weatherData.name;
-        const country = weatherData.sys.country;
-        let capitalLat = null;
-        let capitalLon = null;
+  // Obtener forecast
+  $.ajax({
+    url: "libs/php/getForecast.php",
+    type: "GET",
+    data: {
+      lat: window.selectedLat,
+      lon: window.selectedLon
+    },
+    dataType: "json",
+    success: function (forecastData) {
+      const list = forecastData.list;
+      let forecastHTML = "";
 
-        if (country.capitalInfo && Array.isArray(country.capitalInfo.latlng) && country.capitalInfo.latlng.length === 2) {
-          capitalLat = country.capitalInfo.latlng[0];
-          capitalLon = country.capitalInfo.latlng[1];
-        }
-        if (capitalLat !== null && capitalLon !== null) {
-          if (capitalMarker) {
-            map.removeLayer(capitalMarker);
-          }
+      // Mostramos 1 cada 8 (aprox. 1 por día a la misma hora)
+      for (let i = 0; i < list.length; i += 8) {
+        const f = list[i];
+        const date = new Date(f.dt * 1000);
+        const day = date.toLocaleDateString();
+        const icon = f.weather[0].icon;
+        const desc = f.weather[0].description;
+        const temp = Math.round(f.main.temp);
 
-          capitalMarker = L.marker([capitalLat, capitalLon], {
-            icon: L.icon({
-              iconUrl: 'src/city.svg',
-              iconSize: [50, 50],
-              iconAnchor: [15, 30],
-              popupAnchor: [0, -30]
-            })
-          }).addTo(map).bindPopup(`<strong>Capital:</strong> ${capital}`);
-        }
-
-
-        const html = `
-          <div>
-            <h5 style="font-size: 30px;">${city}, ${country}</h5>
-            <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${description}" />
-            <p style="font-size: 30px;"><strong>${description}</strong></p>
-            <p><strong>Temp:</strong>${temp}°C (feels like ${feelsLike}°C)</p>
-            <p><strong>Max:</strong> ${maxTemp}°C / Min: ${minTemp}°C</p>
+        forecastHTML += `
+          <div class="mb-2 p-2 border border-secondary rounded">
+            <strong>${day}</strong><br>
+            <img src="https://openweathermap.org/img/wn/${icon}.png" alt="${desc}" />
+            ${desc}, ${temp}°C
           </div>
         `;
-
-        $('#weather').html(html);
-
-      },
-      error: function () {
-        alert("Weather not founded.");
       }
-    });
+
+      $('#forecastBody').html(forecastHTML);
+    },
+    error: function () {
+      $('#forecastBody').html("<p>Error loading forecast.</p>");
+    }
   });
+});
 
   $("#nearbyBtn").on("click", function () {
     if (!window.selectedLat || !window.selectedLon) {
@@ -608,5 +638,5 @@ $(document).ready(function () {
     });
   });
 
-
 });
+
