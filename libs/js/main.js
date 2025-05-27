@@ -93,65 +93,86 @@ $(document).ready(function () {
 
   // show my current location
 
-  $("#myLocationBtn").on("click", function () {
-    if (!map) {
-      alert("Map not loaded.");
-      return;
-    }
+ $("#myLocationBtn").on("click", function () {
+  if (!map) {
+    alert("Map not loaded.");
+    return;
+  }
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function (position) {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
+  $("#loader").fadeIn(200);
 
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function (position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
 
-        window.selectedLat = lat;
-        window.selectedLon = lon;
+      window.selectedLat = lat;
+      window.selectedLon = lon;
 
-
-        $.ajax({
-          url: `https://secure.geonames.org/countryCodeJSON?lat=${lat}&lng=${lon}&username=bmcaldarella`,
-          method: 'GET',
-          success: function (data) {
-            if (data && data.countryCode) {
-              window.selectedCountryCode = data.countryCode;
-            } else {
-              console.warn("Code country not found.");
-            }
+      
+      $.ajax({
+        url: `https://secure.geonames.org/countryCodeJSON?lat=${lat}&lng=${lon}&username=bmcaldarella`,
+        method: 'GET',
+        success: function (data) {
+          if (data && data.countryCode) {
+            window.selectedCountryCode = data.countryCode;
+          } else {
+            console.warn("Code country not found.");
           }
-        });
+        }
+      });
 
-        // centro map in my location
-        map.setView([lat, lon], 18);
-        map.addLayer(poiClusterGroup);
+      $.ajax({
+        url: 'libs/php/getOpenCageInfo.php',
+        method: 'GET',
+        data: { lat, lon },
+        dataType: 'json',
+        success: function (data) {
+          let cityName = '';
+          if (data.results && data.results.length > 0) {
+            cityName = data.results[0].components.city || 
+                       data.results[0].components.town || 
+                       data.results[0].components.village || 
+                       data.results[0].components.county || 
+                       'Unknown location';
+          }
+          
+          map.setView([lat, lon], 18);
+          map.addLayer(poiClusterGroup);
 
-        // delete previous markers
-        if (window.locationMarker) map.removeLayer(window.locationMarker);
-        if (window.locationCircle) map.removeLayer(window.locationCircle);
+          if (window.locationMarker) map.removeLayer(window.locationMarker);
+          if (window.locationCircle) map.removeLayer(window.locationCircle);
 
-        // Mark location
-        window.locationMarker = L.marker([lat, lon])
+          window.locationMarker = L.marker([lat, lon])
+            .bindPopup(`<b>${cityName}</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`)
+            .openPopup()
+            .addTo(map);
 
-          .bindPopup(`<b>Your current location</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`)
-          .openPopup()
-          .addTo(map)
+          window.locationCircle = L.circle([lat, lon], {
+            color: '#4A90E2',
+            fillColor: '#4A90E2',
+            fillOpacity: 0.3,
+            radius: 500
+          }).addTo(map);
 
+          $("#loader").fadeOut(500);
+        },
+        error: function () {
+          console.warn("❌ Error.");
+          $("#loader").fadeOut(500);
+        }
+      });
 
-        // Círcle around my location
-        window.locationCircle = L.circle([lat, lon], {
-          color: '#4A90E2',
-          fillColor: '#4A90E2',
-          fillOpacity: 0.3,
-          radius: 500
-        }).addTo(map);
-      },
-        function (error) {
-          alert(": " + error.message);
-        });
-    } else {
-      alert("Location not soported.");
-    }
-  });
+    }, function (error) {
+      alert("Error: " + error.message);
+      $("#loader").fadeOut(500);
+    });
+
+  } else {
+    alert("Location not supported.");
+    $("#loader").fadeOut(500);
+  }
+});
 
 
   function mostrarLimiteCiudad(cityName) {
@@ -425,14 +446,16 @@ $(document).ready(function () {
       map.removeLayer(capitalMarker);
     }
 
-    capitalMarker = L.marker([lat, lon], {
-      icon: L.icon({
-        iconUrl: 'src/city.svg',
-        iconSize: [40, 40],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -30]
-      })
-    }).addTo(map).bindPopup(`<strong>Capital</strong><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`);
+  const capitalName = selectedFeature.properties.capital || 'Capital'; 
+
+  capitalMarker = L.marker([lat, lon], {
+  icon: L.icon({
+    iconUrl: 'src/city.svg',
+    iconSize: [40, 40],
+    iconAnchor: [15, 30],
+    popupAnchor: [0, -30]
+  })
+}).addTo(map).bindPopup(`<strong>${capitalName}</strong><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`);
 
     mostrarLugaresDeInteres(lat, lon); 
 
@@ -595,6 +618,8 @@ $(document).ready(function () {
         let currencyName = 'N/A';
         let currencySymbol = '';
 
+        
+        
         if (currencies) {
           const code = Object.keys(currencies)[0];
           currencyCode = code;
@@ -655,6 +680,43 @@ $(document).ready(function () {
       }
     });
   });
+  //loader
+
+function getInitialLocation() {
+  $('#loader').fadeIn(200); 
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        const coords = [position.coords.latitude, position.coords.longitude];
+
+        initMap(coords);
+
+        $('#loader').fadeOut(500);
+        $('#map').show();
+      },
+      function (error) {
+        console.warn("Geolocation denied or failed:", error.message);
+
+        initMap([0, 0]);
+
+        $('#loader').fadeOut(500);
+        $('#map').show();
+      }
+    );
+  } else {
+    console.log("Geolocation not supported");
+    initMap([0, 0]);
+    $('#loader').fadeOut(500);
+    $('#map').show();
+  }
+}
+
+
+$(document).ready(function () {
+  getInitialLocation();
+});
+
 
 });
 
