@@ -3,10 +3,7 @@ $(document).ready(function () {
   let countryBordersData;
   let borderLayer;
   let clickMarker;
-  let poiMarkers = [];
   let cityBorderLayer;
-  let locationMarker;
-  let locationCircle;
   let capitalMarker;
   let poiClusterGroup = L.markerClusterGroup();
 
@@ -16,14 +13,14 @@ $(document).ready(function () {
   const icons = {
     museum: L.icon({
       iconUrl: 'src/museum.png',
-      iconSize: [40, 340],
+      iconSize: [40, 40],
       iconAnchor: [40, 40],
       popupAnchor: [0, -30]
     }),
 
     village: L.icon({
       iconUrl: 'src/village.svg',
-      iconSize: [40, 340],
+      iconSize: [40, 40],
       iconAnchor: [40, 40],
       popupAnchor: [0, -30]
     }),
@@ -93,86 +90,86 @@ $(document).ready(function () {
 
   // show my current location
 
- $("#myLocationBtn").on("click", function () {
-  if (!map) {
-    alert("Map not loaded.");
-    return;
-  }
+  $("#myLocationBtn").on("click", function () {
+    if (!map) {
+      alert("Map not loaded.");
+      return;
+    }
 
-  $("#loader").fadeIn(200);
+    $("#loader").fadeIn(200);
 
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function (position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
 
-      window.selectedLat = lat;
-      window.selectedLon = lon;
+        window.selectedLat = lat;
+        window.selectedLon = lon;
 
-      
-      $.ajax({
-        url: `https://secure.geonames.org/countryCodeJSON?lat=${lat}&lng=${lon}&username=bmcaldarella`,
-        method: 'GET',
-        success: function (data) {
-          if (data && data.countryCode) {
-            window.selectedCountryCode = data.countryCode;
-          } else {
-            console.warn("Code country not found.");
+
+        $.ajax({
+           url: 'libs/php/getCountryCode.php',
+          method: 'GET',
+          success: function (data) {
+            if (data && data.countryCode) {
+              window.selectedCountryCode = data.countryCode;
+            } else {
+              console.warn("Code country not found.");
+            }
           }
-        }
+        });
+
+        $.ajax({
+          url: 'libs/php/getOpenCageInfo.php',
+          method: 'GET',
+          data: { lat, lon },
+          dataType: 'json',
+          success: function (data) {
+            let cityName = '';
+            if (data.results && data.results.length > 0) {
+              cityName = data.results[0].components.city ||
+                data.results[0].components.town ||
+                data.results[0].components.village ||
+                data.results[0].components.county ||
+                'Unknown location';
+            }
+
+            map.setView([lat, lon], 18);
+            map.addLayer(poiClusterGroup);
+
+            if (window.locationMarker) map.removeLayer(window.locationMarker);
+            if (window.locationCircle) map.removeLayer(window.locationCircle);
+
+            window.locationMarker = L.marker([lat, lon])
+              .bindPopup(`<b>${cityName}</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`)
+              .openPopup()
+              .addTo(map);
+
+            window.locationCircle = L.circle([lat, lon], {
+              color: '#4A90E2',
+              fillColor: '#4A90E2',
+              fillOpacity: 0.3,
+              radius: 500
+            }).addTo(map);
+
+            $("#loader").fadeOut(500);
+          },
+          error: function () {
+            console.warn("❌ Error.");
+            $("#loader").fadeOut(500);
+          }
+        });
+
+      }, function (error) {
+        alert("Error: " + error.message);
+        $("#loader").fadeOut(500);
       });
 
-      $.ajax({
-        url: 'libs/php/getOpenCageInfo.php',
-        method: 'GET',
-        data: { lat, lon },
-        dataType: 'json',
-        success: function (data) {
-          let cityName = '';
-          if (data.results && data.results.length > 0) {
-            cityName = data.results[0].components.city || 
-                       data.results[0].components.town || 
-                       data.results[0].components.village || 
-                       data.results[0].components.county || 
-                       'Unknown location';
-          }
-          
-          map.setView([lat, lon], 18);
-          map.addLayer(poiClusterGroup);
-
-          if (window.locationMarker) map.removeLayer(window.locationMarker);
-          if (window.locationCircle) map.removeLayer(window.locationCircle);
-
-          window.locationMarker = L.marker([lat, lon])
-            .bindPopup(`<b>${cityName}</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`)
-            .openPopup()
-            .addTo(map);
-
-          window.locationCircle = L.circle([lat, lon], {
-            color: '#4A90E2',
-            fillColor: '#4A90E2',
-            fillOpacity: 0.3,
-            radius: 500
-          }).addTo(map);
-
-          $("#loader").fadeOut(500);
-        },
-        error: function () {
-          console.warn("❌ Error.");
-          $("#loader").fadeOut(500);
-        }
-      });
-
-    }, function (error) {
-      alert("Error: " + error.message);
+    } else {
+      alert("Location not supported.");
       $("#loader").fadeOut(500);
-    });
-
-  } else {
-    alert("Location not supported.");
-    $("#loader").fadeOut(500);
-  }
-});
+    }
+  });
 
 
   function mostrarLimiteCiudad(cityName) {
@@ -220,12 +217,12 @@ $(document).ready(function () {
     initMap([-34.6037, -58.3816], false);
   }
 
-  let ligthMode ;
+  let ligthMode;
   let darkMode;
 
   function initMap(coords, showCircle) {
     map = L.map('map').setView(coords, 2);
-   ligthMode= L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    ligthMode = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 13,
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
@@ -233,25 +230,25 @@ $(document).ready(function () {
     //dark map toggle 
 
     $("#toggleDarkMode").on("click", function () {
-      const button =  $("#toggleDarkMode");
+      const button = $("#toggleDarkMode");
       const svgIcon = $("#svg-color");
       if (darkMode) {
         map.removeLayer(darkMode);
         map.addLayer(ligthMode);
         darkMode = null;
-               button.css("background-color", "black");
-               svgIcon.attr("fill", "white");
+        button.css("background-color", "black");
+        svgIcon.attr("fill", "white");
 
 
       } else {
         darkMode = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
           maxZoom: 12,
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-         
+
         }).addTo(map);
         map.removeLayer(ligthMode);
-         button.css("background-color", "white");
-          svgIcon.attr("fill", "black");
+        button.css("background-color", "white");
+        svgIcon.attr("fill", "black");
       }
     });
 
@@ -349,45 +346,86 @@ $(document).ready(function () {
     });
   }
 
-  function mostrarLugaresDeInteres(lat, lon) {
-    poiClusterGroup.clearLayers(); 
-
+  function mostrarLugaresWikipedia(countryName) {
+    poiClusterGroup.clearLayers();
     $.ajax({
-      url: `https://secure.geonames.org/findNearbyWikipediaJSON?lat=${lat}&lng=${lon}&username=bmcaldarella`,
-      method: 'GET',
-      success: function (data) {
-        if (data.geonames && data.geonames.length > 0) {
-          data.geonames.forEach((item) => {
-            let icon = icons.default;
-            const title = item.title.toLowerCase();
-            const summary = (item.summary || "").toLowerCase();
+      url: `https://en.wikipedia.org/w/api.php`,
+      data: {
+        action: "query",
+        list: "search",
+        srsearch: `landmarks in ${countryName}`,
+        format: "json",
+        origin: "*"
+      },
+      success: function (response) {
+        const searchResults = response.query.search.slice(0, 10);
+        searchResults.forEach(result => {
+          const title = result.title;
+          $.ajax({
+            url: `https://en.wikipedia.org/w/api.php`,
+            data: {
+              action: "query",
+              titles: title,
+              prop: "coordinates|pageimages|extracts",
+              format: "json",
+              exintro: 1,
+              explaintext: 1,
+              piprop: "thumbnail",
+              pithumbsize: 100,
+              origin: "*"
+            },
+            success: function (data) {
+              const pages = data.query.pages;
+              for (let pageId in pages) {
+                const page = pages[pageId];
+                if (page.coordinates) {
+                  const lat = page.coordinates[0].lat;
+                  const lon = page.coordinates[0].lon;
+                  const description = page.extract || "";
+                  const image = page.thumbnail?.source;
+                  const url = `https://en.wikipedia.org/?curid=${pageId}`;
 
-            if (title.includes("museum") || summary.includes("museum")) icon = icons.museum;
-            else if (title.includes("airport") || summary.includes("airport")) icon = icons.airport;
-            else if (title.includes("church") || summary.includes("church")) icon = icons.church;
-            else if (title.includes("town") || summary.includes("town")) icon = icons.town;
-            else if (title.includes("hotel") || summary.includes("hotel")) icon = icons.hotel;
-            else if (title.includes("castle") || summary.includes("castle")) icon = icons.castle;
-            else if (title.includes("monument") || summary.includes("monument")) icon = icons.monument;
-            else if (title.includes("bridge") || summary.includes("bridge")) icon = icons.bridge;
-            else if (title.includes("palace") || summary.includes("palace")) icon = icons.palace;
-            else if (title.includes("park") || summary.includes("park")) icon = icons.park;
-            else if (title.includes("village") || summary.includes("village")) icon = icons.village;
+                  let icon = icons.default;
+                  const lowerTitle = title.toLowerCase();
 
-            const marker = L.marker([item.lat, item.lng], { icon })
-              .bindPopup(`<b>${item.title}</b><br>${item.summary}<br><a href="https://${item.wikipediaUrl}" target="_blank">Ver más</a>`);
+                  if (lowerTitle.includes("museum")) icon = icons.museum;
+                  else if (lowerTitle.includes("airport")) icon = icons.airport;
+                  else if (lowerTitle.includes("church") || lowerTitle.includes("cathedral")) icon = icons.church;
+                  else if (lowerTitle.includes("castle")) icon = icons.castle;
+                  else if (lowerTitle.includes("monument")) icon = icons.monument;
+                  else if (lowerTitle.includes("bridge")) icon = icons.bridge;
+                  else if (lowerTitle.includes("palace")) icon = icons.palace;
+                  else if (lowerTitle.includes("park")) icon = icons.park;
+                  else if (lowerTitle.includes("hotel")) icon = icons.hotel;
+                  else if (lowerTitle.includes("stadium")) icon = icons.town;
 
-            poiClusterGroup.addLayer(marker); 
+                  const popupContent = `
+                  <div style="max-width:100px;  height:20; font-family: Arial, sans-serif;">
+                    <h5 style="margin-bottom: 5px; font-size: 12px;">${title}</h5>
+                    ${image ? `<img src="${image}" style="width: 100%; border-radius: 5px; margin-bottom: 5px;" />` : ""}
+                    <p style="font-size: 13px; margin-bottom: 8px; line-height: 1.3;">${description.substring(0, 100)}...</p>
+                    <a href="${url}" target="_blank" style="color: #007bff; text-decoration: underline; font-weight: bold;">Ver más</a>
+                  </div>
+                `;
+
+                  const marker = L.marker([lat, lon], { icon }).bindPopup(popupContent);
+                  poiClusterGroup.addLayer(marker);
+                }
+              }
+              map.addLayer(poiClusterGroup);
+            },
+            error: function () {
+              console.warn("❌ Error fetching coordinates for", title);
+            }
           });
-
-          map.addLayer(poiClusterGroup); // get sure to add the cluster group to the map
-        }
+        });
       },
       error: function () {
-        console.log("Error loading POIs");
+        alert("❌ Error fetching Wikipedia landmarks.");
       }
     });
   }
+
   $.ajax({
     url: "data/countryBorders.geo.json",
     dataType: "json",
@@ -441,37 +479,42 @@ $(document).ready(function () {
     window.selectedLon = lon;
     window.selectedCountryCode = selectedISO;
 
-    // switch to the capital marker
     if (capitalMarker) {
       map.removeLayer(capitalMarker);
     }
 
-  const capitalName = selectedFeature.properties.capital || 'Capital'; 
+    const capitalName = selectedFeature.properties.capital || 'Capital';
 
-  capitalMarker = L.marker([lat, lon], {
-  icon: L.icon({
-    iconUrl: 'src/city.svg',
-    iconSize: [40, 40],
-    iconAnchor: [15, 30],
-    popupAnchor: [0, -30]
-  })
-}).addTo(map).bindPopup(`<strong>${capitalName}</strong><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`);
+    capitalMarker = L.marker([lat, lon], {
+      icon: L.icon({
+        iconUrl: 'src/city.svg',
+        iconSize: [40, 40],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -30]
+      })
+    }).addTo(map).bindPopup(`<strong>${capitalName}</strong><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`);
 
-    mostrarLugaresDeInteres(lat, lon); 
+    // NUEVA FUNCIÓN AQUÍ
+    mostrarLugaresWikipedia(selectedFeature.properties.name);
 
     setTimeout(() => {
       if (poiMarkers.length > 0) {
         const group = new L.featureGroup(poiMarkers);
         map.fitBounds(group.getBounds());
       }
-    }, 1000); 
+    }, 1000);
   });
+
+
+
+
+
   $("#weatherBtn").on("click", function (e) {
     if (!window.selectedLat || !window.selectedLon) {
-       e.preventDefault();
+      e.preventDefault();
       alert("Select a location first.");
-     
-    
+
+
 
       return;
     }
@@ -505,8 +548,8 @@ $(document).ready(function () {
         </div>
       `;
         $('#weather').html(html);
-                 const modal = new bootstrap.Modal(document.getElementById('weatherModal'));
-          modal.show();
+        const modal = new bootstrap.Modal(document.getElementById('weatherModal'));
+        modal.show();
 
       },
       error: function () {
@@ -527,7 +570,7 @@ $(document).ready(function () {
         const list = forecastData.list;
         let forecastHTML = "";
 
-     
+
         for (let i = 0; i < list.length; i += 8) {
           const f = list[i];
           const date = new Date(f.dt * 1000);
@@ -618,8 +661,8 @@ $(document).ready(function () {
         let currencyName = 'N/A';
         let currencySymbol = '';
 
-        
-        
+
+
         if (currencies) {
           const code = Object.keys(currencies)[0];
           currencyCode = code;
@@ -646,8 +689,8 @@ $(document).ready(function () {
       `;
 
         $('#infoCard').html(html);
-                         const modal = new bootstrap.Modal(document.getElementById('exampleModalCenter'));
-          modal.show();
+        const modal = new bootstrap.Modal(document.getElementById('exampleModalCenter'));
+        modal.show();
 
 
         $('#convertBtn').on('click', function () {
@@ -682,40 +725,37 @@ $(document).ready(function () {
   });
   //loader
 
-function getInitialLocation() {
-  $('#loader').fadeIn(200); 
+  function getInitialLocation() {
+    $('#loader').fadeIn(200);
 
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function (position) {
-        const coords = [position.coords.latitude, position.coords.longitude];
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          const coords = [position.coords.latitude, position.coords.longitude];
 
-        initMap(coords);
+          initMap(coords);
 
-        $('#loader').fadeOut(500);
-        $('#map').show();
-      },
-      function (error) {
-        console.warn("Geolocation denied or failed:", error.message);
+          $('#loader').fadeOut(500);
+          $('#map').show();
+        },
+        function (error) {
+          console.warn("Geolocation denied or failed:", error.message);
 
-        initMap([0, 0]);
+          initMap([0, 0]);
 
-        $('#loader').fadeOut(500);
-        $('#map').show();
-      }
-    );
-  } else {
-    console.log("Geolocation not supported");
-    initMap([0, 0]);
-    $('#loader').fadeOut(500);
-    $('#map').show();
+          $('#loader').fadeOut(500);
+          $('#map').show();
+        }
+      );
+    } else {
+      console.log("Geolocation not supported");
+      initMap([0, 0]);
+      $('#loader').fadeOut(500);
+      $('#map').show();
+    }
   }
-}
 
 
-$(document).ready(function () {
-  getInitialLocation();
-});
 
 
 });
