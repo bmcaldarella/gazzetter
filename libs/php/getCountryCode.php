@@ -6,7 +6,7 @@ if (!isset($_GET['lat']) || !isset($_GET['lon'])) {
 
 $lat = $_GET['lat'];
 $lon = $_GET['lon'];
-$username = 'bmcaldarella'; // tu nombre de usuario de GeoNames
+$username = 'bmcaldarella'; 
 
 $url = "https://secure.geonames.org/countryCodeJSON?lat=$lat&lng=$lon&username=$username";
 

@@ -135,7 +135,7 @@ $(document).ready(function () {
             }
 
             map.setView([lat, lon], 18);
-            map.addLayer(poiClusterGroup);
+            
 
             if (window.locationMarker) map.removeLayer(window.locationMarker);
             if (window.locationCircle) map.removeLayer(window.locationCircle);
@@ -224,7 +224,7 @@ $(document).ready(function () {
     map = L.map('map').setView(coords, 2);
     ligthMode = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 13,
-      attribution: '© OpenStreetMap contributors'
+      attribution: ''
     }).addTo(map);
 
     //dark map toggle 
@@ -349,7 +349,7 @@ $(document).ready(function () {
   function mostrarLugaresWikipedia(countryName) {
     poiClusterGroup.clearLayers();
     $.ajax({
-      url: `https://en.wikipedia.org/w/api.php`,
+      url: 'libs/php/getWikipediaLandmarks.php',
       data: {
         action: "query",
         list: "search",
@@ -362,7 +362,7 @@ $(document).ready(function () {
         searchResults.forEach(result => {
           const title = result.title;
           $.ajax({
-            url: `https://en.wikipedia.org/w/api.php`,
+            url: 'libs/php/getWikipediaDetails.php',
             data: {
               action: "query",
               titles: title,
@@ -494,7 +494,6 @@ $(document).ready(function () {
       })
     }).addTo(map).bindPopup(`<strong>${capitalName}</strong><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`);
 
-    // NUEVA FUNCIÓN AQUÍ
     mostrarLugaresWikipedia(selectedFeature.properties.name);
 
     setTimeout(() => {
@@ -724,7 +723,7 @@ $(document).ready(function () {
     });
   });
 
-  
+
   //loader
 
   function getInitialLocation() {

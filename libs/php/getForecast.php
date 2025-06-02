@@ -3,7 +3,7 @@ header("Content-Type: application/json");
 
 $lat = $_GET['lat'];
 $lon = $_GET['lon'];
-$apiKey = "b397906a637ac06a44200e129be15dd4"; // misma API key
+$apiKey = "b397906a637ac06a44200e129be15dd4"; 
 
 $url = "https://api.openweathermap.org/data/2.5/forecast?lat={$lat}&lon={$lon}&units=metric&appid={$apiKey}";
 
