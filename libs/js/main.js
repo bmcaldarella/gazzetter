@@ -300,6 +300,8 @@ $(document).ready(function () {
 
                 map.fitBounds(borderLayer.getBounds());
               }
+              mostrarLugaresWikipedia(countryName);
+
             }
             mostrarLimiteCiudad(city);
           } else {
