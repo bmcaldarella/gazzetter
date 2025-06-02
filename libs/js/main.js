@@ -108,7 +108,7 @@ $(document).ready(function () {
 
 
         $.ajax({
-           url: 'libs/php/getCountryCode.php',
+          url: 'libs/php/getCountryCode.php',
           method: 'GET',
           success: function (data) {
             if (data && data.countryCode) {
@@ -723,6 +723,8 @@ $(document).ready(function () {
       }
     });
   });
+
+  
   //loader
 
   function getInitialLocation() {
