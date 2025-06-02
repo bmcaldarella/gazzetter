@@ -135,7 +135,7 @@ $(document).ready(function () {
             }
 
             map.setView([lat, lon], 18);
-            
+            map.addLayer(poiClusterGroup);
 
             if (window.locationMarker) map.removeLayer(window.locationMarker);
             if (window.locationCircle) map.removeLayer(window.locationCircle);
@@ -349,7 +349,7 @@ $(document).ready(function () {
   function mostrarLugaresWikipedia(countryName) {
     poiClusterGroup.clearLayers();
     $.ajax({
-      url: 'libs/php/getWikipediaLandmarks.php',
+      url: `https://en.wikipedia.org/w/api.php`,
       data: {
         action: "query",
         list: "search",
@@ -362,7 +362,7 @@ $(document).ready(function () {
         searchResults.forEach(result => {
           const title = result.title;
           $.ajax({
-            url: 'libs/php/getWikipediaDetails.php',
+            url: `https://en.wikipedia.org/w/api.php`,
             data: {
               action: "query",
               titles: title,
