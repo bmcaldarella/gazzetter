@@ -672,7 +672,7 @@ $(document).ready(function () {
         const html = `
         <div style="padding: 30px; border-radius: 10px;">
           <h3>${name}</h3>
-          <img src="${flag}" alt="${name}" style="width:300px; height:200px; object-fit:contain;" />
+          <img src="${flag}" alt="${name}" style="max-width: 100%; height: auto; display: block; margin: 0 auto; object-fit: contain;" />
           <p><strong>Capital:</strong> ${capital}</p>
           <p><strong>Population:</strong> ${population}</p>
           <p><strong>Región:</strong> ${region}</p>

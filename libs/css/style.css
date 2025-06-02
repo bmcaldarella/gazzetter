@@ -10,7 +10,7 @@ html, body {
 #map {
   position: relative;
   height: 90vh;
-  padding: 10%;
+  padding: 20%;
   position: relative;
 }
 .modal-backdrop {
