@@ -575,6 +575,65 @@ $(document).ready(function () {
   });
 
 
+$("#currencyBtn").on("click", function () {
+  if (!window.selectedCountryCode) {
+    alert("Select a country first.");
+    return;
+  }
+
+  $.ajax({
+    url: "libs/php/getCountryInfo.php",
+    type: "GET",
+    data: { code: window.selectedCountryCode },
+    dataType: "json",
+    success: function (data) {
+      const country = data[0];
+      const name = country.name.common;
+      const currencies = country.currencies;
+
+      if (!currencies) {
+        $('#currencyInfo').text("No currency info available.");
+        return;
+      }
+
+      const code = Object.keys(currencies)[0];
+      const currencyName = currencies[code].name;
+      const symbol = currencies[code].symbol || '';
+
+      $('#currencyInfo').html(`<p><strong>${currencyName} (${code})</strong> ${symbol}</p>`);
+      $('#currencyConversion').show();
+
+      $('#convertBtn').off('click').on('click', function () {
+        const amount = parseFloat($('#amountInput').val());
+        if (isNaN(amount) || amount <= 0) {
+          $('#conversionResult').text("Enter a valid amount.");
+          return;
+        }
+
+        $.ajax({
+          url: `libs/php/getExchangeRate.php`,
+          method: 'GET',
+          data: { currency: code },
+          dataType: "json",
+          success: function (rateData) {
+            const rateToUSD = 1 / rateData.rate;
+            const result = amount * rateToUSD;
+            $('#conversionResult').html(`${amount} ${code} ≈ <strong>${result.toFixed(2)} USD</strong>`);
+          },
+          error: function () {
+            $('#conversionResult').text("Error loading exchange rate.");
+          }
+        });
+      });
+
+      const modal = new bootstrap.Modal(document.getElementById('currencyModal'));
+      modal.show();
+    },
+    error: function () {
+      alert("Error loading country info.");
+    }
+  });
+});
 
 
 
@@ -725,20 +784,6 @@ $(document).ready(function () {
         const flag = country.flags?.svg || '';
         const languages = country.languages ? Object.values(country.languages).join(', ') : 'N/A';
 
-        const currencies = country.currencies;
-        let currencyCode = 'N/A';
-        let currencyName = 'N/A';
-        let currencySymbol = '';
-
-
-
-        if (currencies) {
-          const code = Object.keys(currencies)[0];
-          currencyCode = code;
-          currencyName = currencies[code].name;
-          currencySymbol = currencies[code].symbol || '';
-        }
-
         const html = `
         <div style="padding: 30px; border-radius: 10px;">
           <h3>${name}</h3>
@@ -747,13 +792,6 @@ $(document).ready(function () {
           <p><strong>Population:</strong> ${population}</p>
           <p><strong>Región:</strong> ${region}</p>
           <p><strong>Languages:</strong> ${languages}</p>
-          <p><strong>Currency:</strong> ${currencyName} (${currencyCode}) ${currencySymbol}</p>
-          <div id="currencyConversion">
-            <label for="amountInput">Convert to USD:</label>
-            <input type="number" id="amountInput" class="form-control" placeholder="${currencyCode}" />
-            <button id="convertBtn" class="btn btn-primary mt-2">Exchange</button>
-            <p id="conversionResult" class="mt-2 text-success"></p>
-          </div>
         </div>
       `;
 

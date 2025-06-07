@@ -31,14 +31,15 @@ html, body {
 #countryInfoBtn,
 #weatherBtn,
 #nearbyBtn,
-#myLocationBtn{
+#myLocationBtn,
+#currencyBtn{
   color: rgb(0, 0, 0);
   background-color: rgba(255, 255, 255, 0.85);
   border: 0.4px solid rgba(0, 0, 255, 0.3);
   border-radius: 5px;
   padding: 5px;
   position: absolute;
-  top: 12rem;       
+  top: 15rem;       
   left: 0.8rem;     
   z-index: 1000;   
   font-weight: bold;
@@ -50,28 +51,31 @@ html, body {
 #toggleDarkMode{
   padding: 5px;
   position: absolute;
-  top: 24rem;       
+  top: 12rem;       
   left: 0.8rem;     
   z-index: 1000;   
 }
 #weatherBtn{
-  top: 15rem;     
+  top:24rem;     
 }
 
 #nearbyBtn{
-  top: 18rem;       
+  top: 21rem;       
 }
 
 #myLocation,
 #myLocationBtn{
   width: 40px;
   height:40px;
-  top: 21rem;
+  top: 27rem;
   background-color: red;
  
 }
 #myLocation{
   right: 140px;
+}
+#currencyBtn{
+  top:18rem;
 }
 
 .title-modal{
@@ -95,9 +99,6 @@ html, body {
   padding: 70px;
 
 }
-
-
-
 
 .three-body {
  --uib-size: 35px;

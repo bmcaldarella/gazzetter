@@ -21,7 +21,7 @@
   <!-- navbar  -->
   <nav class="navbar navbar-dark bg-dark navbar-expand-lg ">
     <div class="container-fluid">
-      <a id ="title-gazzetter" class="navbar-brand" href="/index.html">GAZETTEER</a>
+      <a id="title-gazzetter" class="navbar-brand" href="/index.html">GAZETTEER</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -41,25 +41,65 @@
   </nav>
 
   <div id="loader" class="three-body">
-  <div class="three-body__dot"></div>
-  <div class="three-body__dot"></div>
-  <div class="three-body__dot"></div>
-</div>
+    <div class="three-body__dot"></div>
+    <div class="three-body__dot"></div>
+    <div class="three-body__dot"></div>
+  </div>
+
+
+  <!--My Location-->
+  <button id="myLocationBtn" class="btn-map">
+    <svg version="1.1" id="Icon_Set" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 64 64"
+      style="enable-background:new 0 0 64 64" xml:space="preserve">
+      <g id="User_Location">
+        <path class="st0"
+          d="M35.5 20.5h-.3c-1.1-4.9-5.5-8.5-10.7-8.5s-9.6 3.6-10.7 8.5h-.3c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5h.3c1.1 4.9 5.5 8.5 10.7 8.5s9.6-3.6 10.7-8.5h.3c1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5z" />
+        <path class="st1"
+          d="M14.5 22H14v-6.5h3v4c0 1.4-1.1 2.5-2.5 2.5zM31.5 15.5H14v0c0-4.1 3.4-7.5 7.5-7.5h5.2c2.2 0 4.3-.5 6.3-1.4L36.5 5v5.5c0 2.8-2.2 5-5 5z" />
+        <path class="st1" d="M32 15.4v4.1c0 1.4 1.1 2.5 2.5 2.5h.5v-7.9c-.8.7-1.8 1.2-3 1.3z" />
+        <circle class="st6" cx="28" cy="21.5" r="1" />
+        <circle class="st6" cx="21" cy="21.5" r="1" />
+        <path class="st0" d="M21 26.5c2 2 5.1 2 7.1 0" />
+        <g>
+          <path class="st0"
+            d="M14.5 59V49M14.5 51h-8M42.5 51h-8M14.5 59V49M42.5 59V45.9c0-3-1.8-5.7-4.5-6.9l-9.5-4h0c-1.9 2.9-6.1 2.9-8 0h0L11 39.1C8.2 40.3 6.5 43 6.5 46v13M34.5 59V49" />
+          <path class="st0" d="M24.5 34c-1.4 0-2.8-.3-4-.8V35h0c1.9 2.9 6.1 2.9 8 0h0v-1.8c-1.2.5-2.6.8-4 .8z" />
+        </g>
+        <g>
+          <path class="st0" d="M8.5 34h-5M1.5 34h-1" />
+        </g>
+        <g>
+          <path class="st0" d="M40.5 15h5M47.5 15h1" />
+        </g>
+        <path
+          d="M48.6 47.3 55.5 59l6.9-11.7c1.9-3.2 1.3-7.2-1.3-9.8-3.1-3-8-3-11.1 0-2.7 2.6-3.3 6.6-1.4 9.8zm2.9-4.1c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 4-4 4-4-1.7-4-4z"
+          style="fill:#ff7043;stroke:#37474f;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10" />
+        <g>
+          <path class="st0"
+            d="M47.7 25.5c4.3-4.3 11.3-4.3 15.6 0M50.6 28.3c2.7-2.7 7.2-2.7 9.9 0M53.4 31.1c1.2-1.2 3.1-1.2 4.2 0" />
+        </g>
+      </g>
+    </svg>
+  </button>
+
+
+
+
   <!-- toggle dark -->
-<button id="toggleDarkMode" class="btn btn-dark" >
-    <svg id="svg-color" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
-      <path
-        d="M6.5 0a6.5 6.5 0 1 0 0 13A6.5 6.5 0 0 0 6.5 0zM1.5 6.5a5 5 0 1 1 10 0A5 5 0 0 1 1.5 6.5z" />
+  <button id="toggleDarkMode" class="btn btn-dark">
+    <svg id="svg-color" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+      viewBox="0 0 16 16">
+      <path d="M6.5 0a6.5 6.5 0 1 0 0 13A6.5 6.5 0 0 0 6.5 0zM1.5 6.5a5 5 0 1 1 10 0A5 5 0 0 1 1.5 6.5z" />
       <path
         d="M8.75.25a7.25 7.25 0 1 1-14.5-.001A7.25 7.25 0 0 1 8.75.25zm-7.25-.25a8.25 8.25 0 1 0 .001-16.501A8.25 8.25 0 0 0 .5-.001z" />
     </svg>
 
-   </button>
+  </button>
 
 
   <!-- modal info country -->
 
-  <button id="countryInfoBtn"   data-bs-target="#exampleModalCenter">
+  <button id="countryInfoBtn" data-bs-target="#exampleModalCenter">
     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24">
       <g fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10" />
@@ -75,7 +115,7 @@
 
   <div class="modal fade" id="exampleModalCenter" tabindex="-1" aria-labelledby="exampleModalCenterTitle"
     aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable" style="margin-left: 2.0rem; max-width: 400px;">
+    <div class="modal-dialog modal-dialog-scrollable" style="margin-top:6rem; margin-left: 2.0rem; max-width: 400px;">
       <div class="modal-content bg-dark text-white">
 
         <div class="modal-header">
@@ -95,11 +135,44 @@
     </div>
   </div>
 
+  <!--Currency-->
+
+  <button id="currencyBtn" class="btn-group" data-bs-target="#currencyModal">
+    <svg xmlns="http://www.w3.org/2000/svg"width="30" height="30" fill="currentColor" viewBox="0 0 512 512">
+      <g data-name="Currency Circulating">
+        <path
+          d="M321.159 256a67.468 67.468 0 1 0-67.468 67.472A67.468 67.468 0 0 0 321.159 256zM220.3 278.037l-.655-1.533 15.066-6.384.645 1.536c2.318 5.503 10.354 9.656 18.69 9.656 3.737 0 15.926-.681 15.926-9.417 0-4.551-5.22-7.288-16.422-8.618-12.033-1.343-30.234-3.378-30.234-22.69 0-11.804 8.784-20.06 23.584-22.284v-9.054h16.226v9.094c6.882 1.227 15.91 4.262 20.977 14.607l.748 1.526-13.872 6.417-.765-1.273c-2.31-3.817-9.376-6.923-15.763-6.923-5.413 0-14.49 1.024-14.49 7.89 0 5.091 6.544 6.275 15.096 7.295 13.575 1.673 32.166 3.964 32.166 24.013 0 14.687-11.857 22.45-24.093 23.871v10.317h-16.226v-9.825c-12.819-1.553-22.231-7.984-26.604-18.22z" />
+        <path
+          d="m413.304 236.21-24.692 25.916a136.726 136.726 0 0 0-115.19-144.149 137.388 137.388 0 0 0-140.525 68.093l17.39 9.775a117.361 117.361 0 0 1 120.035-58.163 116.764 116.764 0 0 1 98.327 123.856l-24.817-23.651-15.196 15.933 35.588 33.899-.013.006 15.949 15.185 15.182-15.916v-.01l33.906-35.578zM241.68 374.318a116.766 116.766 0 0 1-98.326-123.856l24.818 23.654 15.195-15.937-35.587-33.899.013-.007-15.95-15.184-15.182 15.916v.01l-33.909 35.58 15.944 15.195 24.692-25.915a136.624 136.624 0 0 0 136.225 145.793 137.52 137.52 0 0 0 119.494-69.738l-17.39-9.775a117.362 117.362 0 0 1-120.036 58.163z" />
+      </g>
+    </svg></button>
+    <div class="modal fade" id="currencyModal" tabindex="-1" aria-labelledby="currencyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" style="margin-top:6rem ;margin-left: 2.0rem; max-width: 400px;">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h4 class="modal-title">Currency Exchange</h4>
+      </div>
+      <div class="modal-body">
+        <p id="currencyInfo">Select a country to load currency info.</p>
+        <div id="currencyConversion" style="display: none;">
+          <label for="amountInput">Amount:</label>
+          <input type="number" id="amountInput" class="form-control" placeholder="e.g. 100"/>
+          <button id="convertBtn" class="btn btn-primary mt-2">Convert to USD</button>
+          <p id="conversionResult" class="mt-2 text-success"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 
   <!--weather Modal -->
 
- 
+
   <button id="weatherBtn" class="btn-group" data-bs-target="#weatherModal">
     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 24 24">
       <path
@@ -107,7 +180,7 @@
     </svg>
   </button>
 
- 
+
   <div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable" style="margin-left: 2rem; max-width: 400px;">
       <div class="modal-content bg-dark text-white">
@@ -160,48 +233,14 @@
   </div>
 
 
-  <button id="myLocationBtn" class="btn-map">
-    <svg version="1.1" id="Icon_Set" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 64 64"
-      style="enable-background:new 0 0 64 64" xml:space="preserve">
-      <g id="User_Location">
-        <path class="st0"
-          d="M35.5 20.5h-.3c-1.1-4.9-5.5-8.5-10.7-8.5s-9.6 3.6-10.7 8.5h-.3c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5h.3c1.1 4.9 5.5 8.5 10.7 8.5s9.6-3.6 10.7-8.5h.3c1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5z" />
-        <path class="st1"
-          d="M14.5 22H14v-6.5h3v4c0 1.4-1.1 2.5-2.5 2.5zM31.5 15.5H14v0c0-4.1 3.4-7.5 7.5-7.5h5.2c2.2 0 4.3-.5 6.3-1.4L36.5 5v5.5c0 2.8-2.2 5-5 5z" />
-        <path class="st1" d="M32 15.4v4.1c0 1.4 1.1 2.5 2.5 2.5h.5v-7.9c-.8.7-1.8 1.2-3 1.3z" />
-        <circle class="st6" cx="28" cy="21.5" r="1" />
-        <circle class="st6" cx="21" cy="21.5" r="1" />
-        <path class="st0" d="M21 26.5c2 2 5.1 2 7.1 0" />
-        <g>
-          <path class="st0"
-            d="M14.5 59V49M14.5 51h-8M42.5 51h-8M14.5 59V49M42.5 59V45.9c0-3-1.8-5.7-4.5-6.9l-9.5-4h0c-1.9 2.9-6.1 2.9-8 0h0L11 39.1C8.2 40.3 6.5 43 6.5 46v13M34.5 59V49" />
-          <path class="st0" d="M24.5 34c-1.4 0-2.8-.3-4-.8V35h0c1.9 2.9 6.1 2.9 8 0h0v-1.8c-1.2.5-2.6.8-4 .8z" />
-        </g>
-        <g>
-          <path class="st0" d="M8.5 34h-5M1.5 34h-1" />
-        </g>
-        <g>
-          <path class="st0" d="M40.5 15h5M47.5 15h1" />
-        </g>
-        <path
-          d="M48.6 47.3 55.5 59l6.9-11.7c1.9-3.2 1.3-7.2-1.3-9.8-3.1-3-8-3-11.1 0-2.7 2.6-3.3 6.6-1.4 9.8zm2.9-4.1c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 4-4 4-4-1.7-4-4z"
-          style="fill:#ff7043;stroke:#37474f;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10" />
-        <g>
-          <path class="st0"
-            d="M47.7 25.5c4.3-4.3 11.3-4.3 15.6 0M50.6 28.3c2.7-2.7 7.2-2.7 9.9 0M53.4 31.1c1.2-1.2 3.1-1.2 4.2 0" />
-        </g>
-      </g>
-    </svg>
-  </button>
 
 
-  <!-- From Uiverse.io by G4b413l --> 
 
   <!-- Map  -->
   <div id="map">
   </div>
 
- 
+
   <!-- Bootstrap JS -->
   <script src="bootstrap-5.3.6-dist/js/bootstrap.bundle.min.js"></script>
   <!-- Jqery -->
