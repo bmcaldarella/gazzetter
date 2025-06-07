@@ -85,16 +85,6 @@
 
 
 
-  <!-- toggle dark -->
-  <button id="toggleDarkMode" class="btn btn-dark">
-    <svg id="svg-color" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
-      viewBox="0 0 16 16">
-      <path d="M6.5 0a6.5 6.5 0 1 0 0 13A6.5 6.5 0 0 0 6.5 0zM1.5 6.5a5 5 0 1 1 10 0A5 5 0 0 1 1.5 6.5z" />
-      <path
-        d="M8.75.25a7.25 7.25 0 1 1-14.5-.001A7.25 7.25 0 0 1 8.75.25zm-7.25-.25a8.25 8.25 0 1 0 .001-16.501A8.25 8.25 0 0 0 .5-.001z" />
-    </svg>
-
-  </button>
 
 
   <!-- modal info country -->
@@ -138,7 +128,7 @@
   <!--Currency-->
 
   <button id="currencyBtn" class="btn-group" data-bs-target="#currencyModal">
-    <svg xmlns="http://www.w3.org/2000/svg"width="30" height="30" fill="currentColor" viewBox="0 0 512 512">
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 512 512">
       <g data-name="Currency Circulating">
         <path
           d="M321.159 256a67.468 67.468 0 1 0-67.468 67.472A67.468 67.468 0 0 0 321.159 256zM220.3 278.037l-.655-1.533 15.066-6.384.645 1.536c2.318 5.503 10.354 9.656 18.69 9.656 3.737 0 15.926-.681 15.926-9.417 0-4.551-5.22-7.288-16.422-8.618-12.033-1.343-30.234-3.378-30.234-22.69 0-11.804 8.784-20.06 23.584-22.284v-9.054h16.226v9.094c6.882 1.227 15.91 4.262 20.977 14.607l.748 1.526-13.872 6.417-.765-1.273c-2.31-3.817-9.376-6.923-15.763-6.923-5.413 0-14.49 1.024-14.49 7.89 0 5.091 6.544 6.275 15.096 7.295 13.575 1.673 32.166 3.964 32.166 24.013 0 14.687-11.857 22.45-24.093 23.871v10.317h-16.226v-9.825c-12.819-1.553-22.231-7.984-26.604-18.22z" />
@@ -146,27 +136,27 @@
           d="m413.304 236.21-24.692 25.916a136.726 136.726 0 0 0-115.19-144.149 137.388 137.388 0 0 0-140.525 68.093l17.39 9.775a117.361 117.361 0 0 1 120.035-58.163 116.764 116.764 0 0 1 98.327 123.856l-24.817-23.651-15.196 15.933 35.588 33.899-.013.006 15.949 15.185 15.182-15.916v-.01l33.906-35.578zM241.68 374.318a116.766 116.766 0 0 1-98.326-123.856l24.818 23.654 15.195-15.937-35.587-33.899.013-.007-15.95-15.184-15.182 15.916v.01l-33.909 35.58 15.944 15.195 24.692-25.915a136.624 136.624 0 0 0 136.225 145.793 137.52 137.52 0 0 0 119.494-69.738l-17.39-9.775a117.362 117.362 0 0 1-120.036 58.163z" />
       </g>
     </svg></button>
-    <div class="modal fade" id="currencyModal" tabindex="-1" aria-labelledby="currencyModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable" style="margin-top:6rem ;margin-left: 2.0rem; max-width: 400px;">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h4 class="modal-title">Currency Exchange</h4>
-      </div>
-      <div class="modal-body">
-        <p id="currencyInfo">Select a country to load currency info.</p>
-        <div id="currencyConversion" style="display: none;">
-          <label for="amountInput">Amount:</label>
-          <input type="number" id="amountInput" class="form-control" placeholder="e.g. 100"/>
-          <button id="convertBtn" class="btn btn-primary mt-2">Convert to USD</button>
-          <p id="conversionResult" class="mt-2 text-success"></p>
+  <div class="modal fade" id="currencyModal" tabindex="-1" aria-labelledby="currencyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" style="margin-top:6rem ;margin-left: 2.0rem; max-width: 400px;">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h4 class="modal-title">Currency Exchange</h4>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <div class="modal-body">
+          <p id="currencyInfo">Select a country to load currency info.</p>
+          <div id="currencyConversion" style="display: none;">
+            <label for="amountInput">Amount:</label>
+            <input type="number" id="amountInput" class="form-control" placeholder="e.g. 100" />
+            <button id="convertBtn" class="btn btn-primary mt-2">Convert to USD</button>
+            <p id="conversionResult" class="mt-2 text-success"></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
 
 
@@ -232,9 +222,31 @@
     </div>
   </div>
 
+  <!-- History of the country modal-->
 
+  <button id="wikiBtn" class="btn-map" data-bs-target="#wikiModal">
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+      stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M12 6v12m0-12c-1.5-1-4-2-7-2v12c3 0 5.5 1 7 2m0-12c1.5-1 4-2 7-2v12c-3 0-5.5 1-7 2" />
+    </svg>
+  </button>
 
-
+<div class="modal fade" id="wikiModal" tabindex="-1" aria-labelledby="wikiModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" style="margin-left: 2rem; max-width: 500px;">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h4 class="modal-title">About This Country</h4>
+      </div>
+      <div class="modal-body">
+        <div id="wikiContent">Loading...</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Map  -->
   <div id="map">

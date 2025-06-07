@@ -18,7 +18,7 @@ function detectUserCountry(lat, lon) {
         if (previous !== detectedCountryCode) {
           $('#countrySelect').val(detectedCountryCode).trigger('change');
         } else {
-          // 🔁 Forzar el cambio manualmente aunque sea igual
+          
           $('#countrySelect').trigger('change');
         }
       } else {
@@ -147,7 +147,7 @@ $(document).ready(function () {
     }),
 
   };
-  $('#loader').fadeIn(200); // Mostrar loader desde el inicio
+  $('#loader').fadeIn(200); // Show loader
 
   loadCountriesIntoSelect(() => {
     if (navigator.geolocation) {
@@ -160,19 +160,19 @@ $(document).ready(function () {
           window.selectedLon = lon;
 
           detectUserCountry(lat, lon);
-          initMap([lat, lon], true); // vista centrada
+          initMap([lat, lon], true); 
           $('#map').fadeIn(300);
           $('#loader').fadeOut(500);
         },
         function (error) {
           console.warn("Geolocation error:", error.message);
-          initMap([20, 0], false); // vista global
+          initMap([20, 0], false); 
           $('#map').fadeIn(300);
           $('#loader').fadeOut(500);
         }
       );
     } else {
-      initMap([20, 0], false); // sin geolocalización
+      initMap([20, 0], false); 
       $('#map').fadeIn(300);
       $('#loader').fadeOut(500);
     }
@@ -303,31 +303,6 @@ $(document).ready(function () {
       attribution: ''
     }).addTo(map);
 
-    //dark map toggle 
-
-    $("#toggleDarkMode").on("click", function () {
-      const button = $("#toggleDarkMode");
-      const svgIcon = $("#svg-color");
-      if (darkMode) {
-        map.removeLayer(darkMode);
-        map.addLayer(ligthMode);
-        darkMode = null;
-        button.css("background-color", "black");
-        svgIcon.attr("fill", "white");
-
-
-      } else {
-        darkMode = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-          maxZoom: 12,
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-
-        }).addTo(map);
-        map.removeLayer(ligthMode);
-        button.css("background-color", "white");
-        svgIcon.attr("fill", "black");
-      }
-    });
-
 
     if (showCircle) {
       L.marker(coords).addTo(map)
@@ -342,7 +317,9 @@ $(document).ready(function () {
       const lon = e.latlng.lng;
 
       $.ajax({
-        url: `https://secure.geonames.org/findNearbyPlaceNameJSON?lat=${lat}&lng=${lon}&username=bmcaldarella`,
+        url: 'libs/php/getNearbyPlace.php',
+data: { lat: lat, lon: lon },
+
         method: 'GET',
         success: function (response) {
           if (response.geonames && response.geonames.length > 0) {
@@ -428,61 +405,51 @@ $(document).ready(function () {
     });
   }
 
-  function mostrarLugaresWikipedia(countryName) {
-    poiClusterGroup.clearLayers();
-    $.ajax({
-      url: `https://en.wikipedia.org/w/api.php`,
-      data: {
-        action: "query",
-        list: "search",
-        srsearch: `landmarks in ${countryName}`,
-        format: "json",
-        origin: "*"
-      },
-      success: function (response) {
-        const searchResults = response.query.search.slice(0, 10);
-        searchResults.forEach(result => {
-          const title = result.title;
-          $.ajax({
-            url: `https://en.wikipedia.org/w/api.php`,
-            data: {
-              action: "query",
-              titles: title,
-              prop: "coordinates|pageimages|extracts",
-              format: "json",
-              exintro: 1,
-              explaintext: 1,
-              piprop: "thumbnail",
-              pithumbsize: 100,
-              origin: "*"
-            },
-            success: function (data) {
-              const pages = data.query.pages;
-              for (let pageId in pages) {
-                const page = pages[pageId];
-                if (page.coordinates) {
-                  const lat = page.coordinates[0].lat;
-                  const lon = page.coordinates[0].lon;
-                  const description = page.extract || "";
-                  const image = page.thumbnail?.source;
-                  const url = `https://en.wikipedia.org/?curid=${pageId}`;
+function mostrarLugaresWikipedia(countryName) {
+  poiClusterGroup.clearLayers();
 
-                  let icon = icons.default;
-                  const lowerTitle = title.toLowerCase();
+  $.ajax({
+    url: 'libs/php/getWikipediaSearch.php',
+    data: { country: countryName },
+    method: 'GET',
+    dataType: 'json',
+    success: function (response) {
+      const searchResults = response.query.search.slice(0, 10);
+      searchResults.forEach(result => {
+        const title = result.title;
 
-                  if (lowerTitle.includes("museum")) icon = icons.museum;
-                  else if (lowerTitle.includes("airport")) icon = icons.airport;
-                  else if (lowerTitle.includes("church") || lowerTitle.includes("cathedral")) icon = icons.church;
-                  else if (lowerTitle.includes("castle")) icon = icons.castle;
-                  else if (lowerTitle.includes("monument")) icon = icons.monument;
-                  else if (lowerTitle.includes("bridge")) icon = icons.bridge;
-                  else if (lowerTitle.includes("palace")) icon = icons.palace;
-                  else if (lowerTitle.includes("park")) icon = icons.park;
-                  else if (lowerTitle.includes("hotel")) icon = icons.hotel;
-                  else if (lowerTitle.includes("stadium")) icon = icons.town;
+        $.ajax({
+          url: 'libs/php/getWikipediaDetails.php',
+          data: { title },
+          method: 'GET',
+          dataType: 'json',
+          success: function (data) {
+            const pages = data.query.pages;
+            for (let pageId in pages) {
+              const page = pages[pageId];
+              if (page.coordinates) {
+                const lat = page.coordinates[0].lat;
+                const lon = page.coordinates[0].lon;
+                const description = page.extract || "";
+                const image = page.thumbnail?.source;
+                const url = `https://en.wikipedia.org/?curid=${pageId}`;
 
-                  const popupContent = `
-                  <div style="max-width:100px;  height:20; font-family: Arial, sans-serif;">
+                let icon = icons.default;
+                const lowerTitle = title.toLowerCase();
+
+                if (lowerTitle.includes("museum")) icon = icons.museum;
+                else if (lowerTitle.includes("airport")) icon = icons.airport;
+                else if (lowerTitle.includes("church") || lowerTitle.includes("cathedral")) icon = icons.church;
+                else if (lowerTitle.includes("castle")) icon = icons.castle;
+                else if (lowerTitle.includes("monument")) icon = icons.monument;
+                else if (lowerTitle.includes("bridge")) icon = icons.bridge;
+                else if (lowerTitle.includes("palace")) icon = icons.palace;
+                else if (lowerTitle.includes("park")) icon = icons.park;
+                else if (lowerTitle.includes("hotel")) icon = icons.hotel;
+                else if (lowerTitle.includes("stadium")) icon = icons.town;
+
+                const popupContent = `
+                  <div style="max-width:100px; font-family: Arial, sans-serif;">
                     <h5 style="margin-bottom: 5px; font-size: 12px;">${title}</h5>
                     ${image ? `<img src="${image}" style="width: 100%; border-radius: 5px; margin-bottom: 5px;" />` : ""}
                     <p style="font-size: 13px; margin-bottom: 8px; line-height: 1.3;">${description.substring(0, 100)}...</p>
@@ -490,23 +457,23 @@ $(document).ready(function () {
                   </div>
                 `;
 
-                  const marker = L.marker([lat, lon], { icon }).bindPopup(popupContent);
-                  poiClusterGroup.addLayer(marker);
-                }
+                const marker = L.marker([lat, lon], { icon }).bindPopup(popupContent);
+                poiClusterGroup.addLayer(marker);
               }
-              map.addLayer(poiClusterGroup);
-            },
-            error: function () {
-              console.warn("❌ Error fetching coordinates for", title);
             }
-          });
+            map.addLayer(poiClusterGroup);
+          },
+          error: function () {
+            console.warn("❌ Error fetching details for", title);
+          }
         });
-      },
-      error: function () {
-        alert("❌ Error fetching Wikipedia landmarks.");
-      }
-    });
-  }
+      });
+    },
+    error: function () {
+      alert("❌ Error fetching Wikipedia landmarks.");
+    }
+  });
+}
 
   $("#countrySelect").on("change", function () {
     const selectedISO = $(this).val();
@@ -575,65 +542,65 @@ $(document).ready(function () {
   });
 
 
-$("#currencyBtn").on("click", function () {
-  if (!window.selectedCountryCode) {
-    alert("Select a country first.");
-    return;
-  }
+  $("#currencyBtn").on("click", function () {
+    if (!window.selectedCountryCode) {
+      alert("Select a country first.");
+      return;
+    }
 
-  $.ajax({
-    url: "libs/php/getCountryInfo.php",
-    type: "GET",
-    data: { code: window.selectedCountryCode },
-    dataType: "json",
-    success: function (data) {
-      const country = data[0];
-      const name = country.name.common;
-      const currencies = country.currencies;
+    $.ajax({
+      url: "libs/php/getCountryInfo.php",
+      type: "GET",
+      data: { code: window.selectedCountryCode },
+      dataType: "json",
+      success: function (data) {
+        const country = data[0];
+        const name = country.name.common;
+        const currencies = country.currencies;
 
-      if (!currencies) {
-        $('#currencyInfo').text("No currency info available.");
-        return;
-      }
-
-      const code = Object.keys(currencies)[0];
-      const currencyName = currencies[code].name;
-      const symbol = currencies[code].symbol || '';
-
-      $('#currencyInfo').html(`<p><strong>${currencyName} (${code})</strong> ${symbol}</p>`);
-      $('#currencyConversion').show();
-
-      $('#convertBtn').off('click').on('click', function () {
-        const amount = parseFloat($('#amountInput').val());
-        if (isNaN(amount) || amount <= 0) {
-          $('#conversionResult').text("Enter a valid amount.");
+        if (!currencies) {
+          $('#currencyInfo').text("No currency info available.");
           return;
         }
 
-        $.ajax({
-          url: `libs/php/getExchangeRate.php`,
-          method: 'GET',
-          data: { currency: code },
-          dataType: "json",
-          success: function (rateData) {
-            const rateToUSD = 1 / rateData.rate;
-            const result = amount * rateToUSD;
-            $('#conversionResult').html(`${amount} ${code} ≈ <strong>${result.toFixed(2)} USD</strong>`);
-          },
-          error: function () {
-            $('#conversionResult').text("Error loading exchange rate.");
-          }
-        });
-      });
+        const code = Object.keys(currencies)[0];
+        const currencyName = currencies[code].name;
+        const symbol = currencies[code].symbol || '';
 
-      const modal = new bootstrap.Modal(document.getElementById('currencyModal'));
-      modal.show();
-    },
-    error: function () {
-      alert("Error loading country info.");
-    }
+        $('#currencyInfo').html(`<p><strong>${currencyName} (${code})</strong> ${symbol}</p>`);
+        $('#currencyConversion').show();
+
+        $('#convertBtn').off('click').on('click', function () {
+          const amount = parseFloat($('#amountInput').val());
+          if (isNaN(amount) || amount <= 0) {
+            $('#conversionResult').text("Enter a valid amount.");
+            return;
+          }
+
+          $.ajax({
+            url: `libs/php/getExchangeRate.php`,
+            method: 'GET',
+            data: { currency: code },
+            dataType: "json",
+            success: function (rateData) {
+              const rateToUSD = 1 / rateData.rate;
+              const result = amount * rateToUSD;
+              $('#conversionResult').html(`${amount} ${code} ≈ <strong>${result.toFixed(2)} USD</strong>`);
+            },
+            error: function () {
+              $('#conversionResult').text("Error loading exchange rate.");
+            }
+          });
+        });
+
+        const modal = new bootstrap.Modal(document.getElementById('currencyModal'));
+        modal.show();
+      },
+      error: function () {
+        alert("Error loading country info.");
+      }
+    });
   });
-});
 
 
 
@@ -830,6 +797,48 @@ $("#currencyBtn").on("click", function () {
       }
     });
   });
+
+  $("#wikiBtn").on("click", function () {
+    if (!window.selectedCountryCode) {
+      alert("Select a country first.");
+      return;
+    }
+    console.log("funciona")
+
+    const countryFeature = countryBordersData.features.find(
+      f => f.properties.iso_a2 === window.selectedCountryCode
+    );
+
+    if (!countryFeature) {
+      $('#wikiContent').html("Country info not found.");
+      return;
+    }
+
+    const countryName = countryFeature.properties.name;
+
+    $.ajax({
+      url: "libs/php/getWikiSummary.php?country=" + encodeURIComponent(countryName), method: "GET",
+      success: function (data) {
+        let html = `
+        <h5>${data.title}</h5>
+        <p>${data.extract}</p>
+        <a href="${data.content_urls.desktop.page}" target="_blank" class="btn btn-outline-info">Read more on Wikipedia</a>
+      `;
+
+        if (data.thumbnail) {
+          html = `<img src="${data.thumbnail.source}" alt="${data.title}" class="img-fluid mb-3" style="border-radius: 8px;" />` + html;
+        }
+
+        $('#wikiContent').html(html);
+        const modal = new bootstrap.Modal(document.getElementById('wikiModal'));
+        modal.show();
+      },
+      error: function () {
+        $('#wikiContent').html("Could not load Wikipedia info.");
+      }
+    });
+  });
+
 
 
   //loader

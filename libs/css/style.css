@@ -32,7 +32,8 @@ html, body {
 #weatherBtn,
 #nearbyBtn,
 #myLocationBtn,
-#currencyBtn{
+#currencyBtn,
+#wikiBtn{
   color: rgb(0, 0, 0);
   background-color: rgba(255, 255, 255, 0.85);
   border: 0.4px solid rgba(0, 0, 255, 0.3);
@@ -48,13 +49,7 @@ html, body {
   
 }
 
-#toggleDarkMode{
-  padding: 5px;
-  position: absolute;
-  top: 12rem;       
-  left: 0.8rem;     
-  z-index: 1000;   
-}
+
 #weatherBtn{
   top:24rem;     
 }
@@ -68,7 +63,6 @@ html, body {
   width: 40px;
   height:40px;
   top: 27rem;
-  background-color: red;
  
 }
 #myLocation{
@@ -98,6 +92,10 @@ html, body {
 #weather{
   padding: 70px;
 
+}
+
+#wikiBtn{
+  top: 30rem;   
 }
 
 .three-body {
