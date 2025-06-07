@@ -1,6 +1,66 @@
+let detectedCountryCode = null;
+let countriesLoaded = false;
+let countryBordersData;
+
+function detectUserCountry(lat, lon) {
+  $.ajax({
+    url: 'libs/php/getCountryCode.php',
+    method: 'GET',
+    data: { lat: lat, lng: lon },
+    dataType: 'json',
+    success: function (data) {
+      if (data && data.countryCode) {
+        detectedCountryCode = data.countryCode;
+        console.log("🌍 Detected country:", detectedCountryCode);
+
+        const previous = $('#countrySelect').val();
+
+        if (previous !== detectedCountryCode) {
+          $('#countrySelect').val(detectedCountryCode).trigger('change');
+        } else {
+          // 🔁 Forzar el cambio manualmente aunque sea igual
+          $('#countrySelect').trigger('change');
+        }
+      } else {
+        console.warn("Country code not found.");
+      }
+    },
+    error: function () {
+      console.warn("Error calling getCountryCode.php");
+    }
+  });
+}
+
+function loadCountriesIntoSelect(callback) {
+
+  $.ajax({
+    url: "data/countryBorders.geo.json",
+    dataType: "json",
+    success: function (data) {
+      countriesLoaded = true;
+      countryBordersData = data;
+      const select = $("#countrySelect");
+      select.empty();
+      const sorted = data.features.sort((a, b) => a.properties.name.localeCompare(b.properties.name));
+      sorted.forEach(function (feature) {
+        const isoCode = feature.properties.iso_a2;
+        const name = feature.properties.name;
+        select.append(`<option value="${isoCode}">${name}</option>`);
+      });
+
+      if (typeof callback === "function") callback();
+    },
+    error: function () {
+      alert("Error loading country data.");
+    }
+  });
+}
+
+
+
+
 $(document).ready(function () {
   let map;
-  let countryBordersData;
   let borderLayer;
   let clickMarker;
   let cityBorderLayer;
@@ -87,6 +147,36 @@ $(document).ready(function () {
     }),
 
   };
+  $('#loader').fadeIn(200); // Mostrar loader desde el inicio
+
+  loadCountriesIntoSelect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          window.selectedLat = lat;
+          window.selectedLon = lon;
+
+          detectUserCountry(lat, lon);
+          initMap([lat, lon], true); // vista centrada
+          $('#map').fadeIn(300);
+          $('#loader').fadeOut(500);
+        },
+        function (error) {
+          console.warn("Geolocation error:", error.message);
+          initMap([20, 0], false); // vista global
+          $('#map').fadeIn(300);
+          $('#loader').fadeOut(500);
+        }
+      );
+    } else {
+      initMap([20, 0], false); // sin geolocalización
+      $('#map').fadeIn(300);
+      $('#loader').fadeOut(500);
+    }
+  });
 
   // show my current location
 
@@ -106,18 +196,17 @@ $(document).ready(function () {
         window.selectedLat = lat;
         window.selectedLon = lon;
 
+        if (!countriesLoaded) {
+          loadCountriesIntoSelect(() => {
+            setTimeout(() => {
+              detectUserCountry(lat, lon);
+            }, 200);
+          });
+        } else {
+          detectUserCountry(lat, lon);
+        }
 
-        $.ajax({
-          url: 'libs/php/getCountryCode.php',
-          method: 'GET',
-          success: function (data) {
-            if (data && data.countryCode) {
-              window.selectedCountryCode = data.countryCode;
-            } else {
-              console.warn("Code country not found.");
-            }
-          }
-        });
+
 
         $.ajax({
           url: 'libs/php/getOpenCageInfo.php',
@@ -134,7 +223,11 @@ $(document).ready(function () {
                 'Unknown location';
             }
 
-            map.setView([lat, lon], 18);
+            map.flyTo([lat, lon], 13, {
+              animate: true,
+              duration: 1.5
+            });
+
             map.addLayer(poiClusterGroup);
 
             if (window.locationMarker) map.removeLayer(window.locationMarker);
@@ -149,7 +242,7 @@ $(document).ready(function () {
               color: '#4A90E2',
               fillColor: '#4A90E2',
               fillOpacity: 0.3,
-              radius: 500
+              radius: 600
             }).addTo(map);
 
             $("#loader").fadeOut(500);
@@ -199,29 +292,12 @@ $(document).ready(function () {
     });
   }
 
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(showPosition, showError);
-  } else {
-    alert("Geolocation is not supported by this browser.");
-    initMap([-34.6037, -58.3816], false);
-  }
-
-  function showPosition(position) {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-    initMap([lat, lon], true);
-  }
-
-  function showError(error) {
-    alert("Error getting location: " + error.message);
-    initMap([-34.6037, -58.3816], false);
-  }
 
   let ligthMode;
   let darkMode;
 
   function initMap(coords, showCircle) {
-    map = L.map('map').setView(coords, 2);
+    map = L.map('map').setView(coords, 1.5);
     ligthMode = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 13,
       attribution: ''
@@ -253,10 +329,11 @@ $(document).ready(function () {
     });
 
 
-
-    L.marker(coords).addTo(map)
-      .bindPopup("<b>Your current location</b><br>Lat: " + coords[0] + "<br>Lon: " + coords[1])
-      .openPopup();
+    if (showCircle) {
+      L.marker(coords).addTo(map)
+        .bindPopup("<b>Your current location</b><br>Lat: " + coords[0] + "<br>Lon: " + coords[1])
+        .openPopup();
+    }
 
 
 
@@ -273,10 +350,13 @@ $(document).ready(function () {
             const city = place.name;
             const countryName = place.countryName;
             const countryCode = place.countryCode;
+            $('#countrySelect').val(countryCode).trigger('change');
+
 
             window.selectedLat = lat;
             window.selectedLon = lon;
             window.selectedCountryCode = countryCode;
+
 
             if (clickMarker) {
               map.removeLayer(clickMarker);
@@ -428,24 +508,6 @@ $(document).ready(function () {
     });
   }
 
-  $.ajax({
-    url: "data/countryBorders.geo.json",
-    dataType: "json",
-    success: function (data) {
-      countryBordersData = data;
-      const select = $("#countrySelect");
-      const sorted = data.features.sort((a, b) => a.properties.name.localeCompare(b.properties.name));
-      sorted.forEach(function (feature) {
-        const isoCode = feature.properties.iso_a2;
-        const name = feature.properties.name;
-        select.append(`<option value="${isoCode}">${name}</option>`);
-      });
-    },
-    error: function () {
-      alert("Error loading country borders data.");
-    }
-  });
-
   $("#countrySelect").on("change", function () {
     const selectedISO = $(this).val();
     if (!selectedISO || !countryBordersData) return;
@@ -480,6 +542,12 @@ $(document).ready(function () {
     window.selectedLat = lat;
     window.selectedLon = lon;
     window.selectedCountryCode = selectedISO;
+
+    map.panTo([lat, lon], {
+      animate: true,
+      duration: 1.5
+    });
+
 
     if (capitalMarker) {
       map.removeLayer(capitalMarker);
@@ -753,7 +821,7 @@ $(document).ready(function () {
     } else {
       console.log("Geolocation not supported");
       initMap([0, 0]);
-      $('#loader').fadeOut(500);
+      $('#loader').fadeOut(200);
       $('#map').show();
     }
   }
