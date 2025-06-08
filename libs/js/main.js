@@ -18,7 +18,7 @@ function detectUserCountry(lat, lon) {
         if (previous !== detectedCountryCode) {
           $('#countrySelect').val(detectedCountryCode).trigger('change');
         } else {
-          
+
           $('#countrySelect').trigger('change');
         }
       } else {
@@ -32,9 +32,8 @@ function detectUserCountry(lat, lon) {
 }
 
 function loadCountriesIntoSelect(callback) {
-
   $.ajax({
-    url: "data/countryBorders.geo.json",
+    url: "libs/php/getCountryBorders.php", // ✅ Ruta al backend
     dataType: "json",
     success: function (data) {
       countriesLoaded = true;
@@ -55,7 +54,6 @@ function loadCountriesIntoSelect(callback) {
     }
   });
 }
-
 
 
 
@@ -147,7 +145,7 @@ $(document).ready(function () {
     }),
 
   };
-  $('#loader').fadeIn(200); // Show loader
+  $('#loader').fadeIn(200); // Mostrar loader desde el inicio
 
   loadCountriesIntoSelect(() => {
     if (navigator.geolocation) {
@@ -160,19 +158,19 @@ $(document).ready(function () {
           window.selectedLon = lon;
 
           detectUserCountry(lat, lon);
-          initMap([lat, lon], true); 
+          initMap([lat, lon], true); // vista centrada
           $('#map').fadeIn(300);
           $('#loader').fadeOut(500);
         },
         function (error) {
           console.warn("Geolocation error:", error.message);
-          initMap([20, 0], false); 
+          initMap([20, 0], false); // vista global
           $('#map').fadeIn(300);
           $('#loader').fadeOut(500);
         }
       );
     } else {
-      initMap([20, 0], false); 
+      initMap([20, 0], false); // sin geolocalización
       $('#map').fadeIn(300);
       $('#loader').fadeOut(500);
     }
@@ -293,15 +291,32 @@ $(document).ready(function () {
   }
 
 
-  let ligthMode;
-  let darkMode;
 
   function initMap(coords, showCircle) {
     map = L.map('map').setView(coords, 1.5);
-    ligthMode = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const ligthMode = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 13,
       attribution: ''
-    }).addTo(map);
+    });
+
+    const darkMode = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 12,
+      attribution: '&copy; OpenStreetMap &copy; CARTO'
+    });
+
+    ligthMode.addTo(map); // modo por defecto
+
+    const baseMaps = {
+      "🌞 Light": ligthMode,
+      "🌑 Dark": darkMode
+    };
+
+    const overlayMaps = {
+      "📍 Important places": poiClusterGroup
+    };
+
+    L.control.layers(baseMaps, overlayMaps, { position: 'topright' }).addTo(map);
+
 
 
     if (showCircle) {
@@ -310,39 +325,38 @@ $(document).ready(function () {
         .openPopup();
     }
 
-
-
     map.on('click', function (e) {
       const lat = e.latlng.lat;
       const lon = e.latlng.lng;
 
+      window.selectedLat = lat;
+      window.selectedLon = lon;
+
       $.ajax({
         url: 'libs/php/getNearbyPlace.php',
-data: { lat: lat, lon: lon },
-
         method: 'GET',
+        data: {
+          lat: lat,
+          lon: lon
+        },
         success: function (response) {
           if (response.geonames && response.geonames.length > 0) {
             const place = response.geonames[0];
             const city = place.name;
             const countryName = place.countryName;
             const countryCode = place.countryCode;
-            $('#countrySelect').val(countryCode).trigger('change');
 
-
-            window.selectedLat = lat;
-            window.selectedLon = lon;
             window.selectedCountryCode = countryCode;
 
+            if (clickMarker) map.removeLayer(clickMarker);
 
-            if (clickMarker) {
-              map.removeLayer(clickMarker);
-            }
+            const latLng = L.latLng(lat, lon);
 
-            clickMarker = L.marker(e.latlng).addTo(map)
+            clickMarker = L.marker(latLng).addTo(map)
               .bindPopup(`<b>${city}, ${countryName}</b><br>Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`)
               .openPopup();
 
+            // Mostramos la frontera del país
             if (countryBordersData) {
               const countryFeature = countryBordersData.features.find(
                 f => f.properties.iso_a2 === countryCode
@@ -357,99 +371,76 @@ data: { lat: lat, lon: lon },
 
                 map.fitBounds(borderLayer.getBounds());
               }
-              mostrarLugaresWikipedia(countryName);
-
             }
-            mostrarLimiteCiudad(city);
+
+            // Actualizamos el select manualmente SIN disparar 'change'
+            $('#countrySelect').val(countryCode);
+
+            // Mostramos lugares de Wikipedia y ciudad
+           
+           if (city) {
+  mostrarLimiteCiudad(city);
+} else {
+  console.warn("No city name available, skipping city boundary display.");
+}
+
           } else {
-            alert("Error.");
+            alert("No se encontraron lugares cercanos.");
           }
         },
         error: function () {
-          alert("Error");
+          alert("Error llamando al backend.");
         }
       });
-
-      // show places lat, lon);
-      $.ajax({
-        url: 'libs/php/getOpenCageInfo.php',
-        method: 'GET',
-        data: {
-          lat: lat,
-          lon: lon
-        },
-        dataType: 'json',
-        success: function (data) {
-          if (data.results && data.results.length > 0) {
-            const result = data.results[0];
-            const fullLocation = result.formatted;
-            const components = result.components;
-
-            console.log("📍 OpenCage:", fullLocation);
-
-            if (clickMarker) {
-              const popupText = `
-  <b>${city}, ${countryName}</b><br>
-  OpenCage: ${fullLocation}<br>
-  Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}
-`;
-              clickMarker.bindPopup(popupText).openPopup();
-            }
-          }
-        },
-        error: function () {
-          console.warn("OpenCage API call failed.");
-        }
-      });
-
     });
+
+
   }
 
-function mostrarLugaresWikipedia(countryName) {
-  poiClusterGroup.clearLayers();
+  function mostrarLugaresWikipedia(countryName) {
+    poiClusterGroup.clearLayers();
+    $.ajax({
+      url: 'libs/php/getWikipediaSearch.php',
+      method: 'GET',
+      data: { country: countryName },
+      dataType: 'json', success: function (response) {
+        const searchResults = response.query.search.slice(0, 10);
+        searchResults.forEach(result => {
+          const title = result.title;
+          console.log("🔍 Buscando Wikipedia para:", countryName);
 
-  $.ajax({
-    url: 'libs/php/getWikipediaSearch.php',
-    data: { country: countryName },
-    method: 'GET',
-    dataType: 'json',
-    success: function (response) {
-      const searchResults = response.query.search.slice(0, 10);
-      searchResults.forEach(result => {
-        const title = result.title;
+          $.ajax({
+            url: 'libs/php/getWikiInfo.php',
+            data: {
+              title: title,
+            },
+            success: function (data) {
+              const pages = data.query.pages;
+              for (let pageId in pages) {
+                const page = pages[pageId];
+                if (page.coordinates) {
+                  const lat = page.coordinates[0].lat;
+                  const lon = page.coordinates[0].lon;
+                  const description = page.extract || "";
+                  const image = page.thumbnail?.source;
+                  const url = `https://en.wikipedia.org/?curid=${pageId}`;
 
-        $.ajax({
-          url: 'libs/php/getWikipediaDetails.php',
-          data: { title },
-          method: 'GET',
-          dataType: 'json',
-          success: function (data) {
-            const pages = data.query.pages;
-            for (let pageId in pages) {
-              const page = pages[pageId];
-              if (page.coordinates) {
-                const lat = page.coordinates[0].lat;
-                const lon = page.coordinates[0].lon;
-                const description = page.extract || "";
-                const image = page.thumbnail?.source;
-                const url = `https://en.wikipedia.org/?curid=${pageId}`;
+                  let icon = icons.default;
+                  const lowerTitle = title.toLowerCase();
 
-                let icon = icons.default;
-                const lowerTitle = title.toLowerCase();
+                  if (lowerTitle.includes("museum")) icon = icons.museum;
+                  else if (lowerTitle.includes("airport")) icon = icons.airport;
+                  else if (lowerTitle.includes("church") || lowerTitle.includes("cathedral")) icon = icons.church;
+                  else if (lowerTitle.includes("castle")) icon = icons.castle;
+                  else if (lowerTitle.includes("monument")) icon = icons.monument;
+                  else if (lowerTitle.includes("bridge")) icon = icons.bridge;
+                  else if (lowerTitle.includes("palace")) icon = icons.palace;
+                  else if (lowerTitle.includes("park")) icon = icons.park;
+                  else if (lowerTitle.includes("hotel")) icon = icons.hotel;
+                  else if (lowerTitle.includes("stadium")) icon = icons.town;
 
-                if (lowerTitle.includes("museum")) icon = icons.museum;
-                else if (lowerTitle.includes("airport")) icon = icons.airport;
-                else if (lowerTitle.includes("church") || lowerTitle.includes("cathedral")) icon = icons.church;
-                else if (lowerTitle.includes("castle")) icon = icons.castle;
-                else if (lowerTitle.includes("monument")) icon = icons.monument;
-                else if (lowerTitle.includes("bridge")) icon = icons.bridge;
-                else if (lowerTitle.includes("palace")) icon = icons.palace;
-                else if (lowerTitle.includes("park")) icon = icons.park;
-                else if (lowerTitle.includes("hotel")) icon = icons.hotel;
-                else if (lowerTitle.includes("stadium")) icon = icons.town;
-
-                const popupContent = `
-                  <div style="max-width:100px; font-family: Arial, sans-serif;">
+                  const popupContent = `
+                  <div style="max-width:100px;  height:20; font-family: Arial, sans-serif;">
                     <h5 style="margin-bottom: 5px; font-size: 12px;">${title}</h5>
                     ${image ? `<img src="${image}" style="width: 100%; border-radius: 5px; margin-bottom: 5px;" />` : ""}
                     <p style="font-size: 13px; margin-bottom: 8px; line-height: 1.3;">${description.substring(0, 100)}...</p>
@@ -457,23 +448,23 @@ function mostrarLugaresWikipedia(countryName) {
                   </div>
                 `;
 
-                const marker = L.marker([lat, lon], { icon }).bindPopup(popupContent);
-                poiClusterGroup.addLayer(marker);
+                  const marker = L.marker([lat, lon], { icon }).bindPopup(popupContent);
+                  poiClusterGroup.addLayer(marker);
+                }
               }
+              map.addLayer(poiClusterGroup);
+            },
+            error: function () {
+              console.warn("❌ Error fetching coordinates for", title);
             }
-            map.addLayer(poiClusterGroup);
-          },
-          error: function () {
-            console.warn("❌ Error fetching details for", title);
-          }
+          });
         });
-      });
-    },
-    error: function () {
-      alert("❌ Error fetching Wikipedia landmarks.");
-    }
-  });
-}
+      },
+      error: function () {
+        alert("❌ Error fetching Wikipedia landmarks.");
+      }
+    });
+  }
 
   $("#countrySelect").on("change", function () {
     const selectedISO = $(this).val();
@@ -534,8 +525,8 @@ function mostrarLugaresWikipedia(countryName) {
     mostrarLugaresWikipedia(selectedFeature.properties.name);
 
     setTimeout(() => {
-      if (poiMarkers.length > 0) {
-        const group = new L.featureGroup(poiMarkers);
+      if (poiClusterGroup.getLayers().length > 0) {
+      const group = new L.featureGroup(poiClusterGroup.getLayers());
         map.fitBounds(group.getBounds());
       }
     }, 1000);
@@ -602,6 +593,84 @@ function mostrarLugaresWikipedia(countryName) {
     });
   });
 
+  //wiki InfoCountry Btn
+
+  $("#wikiBtn").on("click", function () {
+    if (!window.selectedCountryCode) {
+      alert("Please select a country first.");
+      return;
+    }
+
+    const countryName = $("#countrySelect option:selected").text();
+
+    $("#wikiContent").html("Loading...");
+
+    $.ajax({
+      url: "libs/php/getWikiSummary.php",
+      type: "GET",
+      data: { country: countryName },
+      dataType: "json",
+      success: function (data) {
+        const title = data.title || countryName;
+        const description = data.extract || "No summary available.";
+        const image = data.thumbnail?.source;
+        const link = data.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${countryName}`;
+
+        let html = `
+        <h5>${title}</h5>
+        ${image ? `<img src="${image}" class="img-fluid mb-3" alt="${title}" />` : ''}
+        <p>${description}</p>
+        <a href="${link}" target="_blank" class="btn btn-info mt-2">Read more on Wikipedia</a>
+      `;
+
+        $("#wikiContent").html(html);
+      },
+      error: function () {
+        $("#wikiContent").html("<p class='text-danger'>Failed to load summary.</p>");
+      }
+    });
+  });
+
+  //wiki news
+
+  $("#newsBtn").on("click", function () {
+    if (!window.selectedCountryCode) {
+      alert("Please select a country first.");
+      return;
+    }
+    const countryName = $("#countrySelect option:selected").text();
+    $("#newsContent").html("Loading news...");
+    $.ajax({
+      url: "libs/php/getCountryNews.php",
+      type: "GET",
+      data: { country: countryName },
+      dataType: "json",
+      success: function (data) {
+        console.log("📰 News data received:", data);
+        if (!data.articles || data.articles.length === 0) {
+          $("#newsContent").html("<p>No news articles found.</p>");
+          return;
+        }
+        let html = '<ul class="list-unstyled">';
+        data.articles.forEach(article => {
+          html += `
+          <li class="mb-3">
+            <h6>${article.title}</h6>
+            ${article.image ? `<img src="${article.image}" class="img-fluid mb-2" alt="news">` : ""}
+            <p>${article.description || ""}</p>
+            <a href="${article.url}" target="_blank" class="btn btn-sm btn-outline-info">Read more</a>
+          </li>
+        `;
+        });
+        html += '</ul>';
+
+        $("#newsContent").html(html);
+      },
+      error: function () {
+        $("#newsContent").html("<p class='text-danger'>Failed to load news.</p>");
+      }
+    });
+  });
 
 
   $("#weatherBtn").on("click", function (e) {
@@ -798,48 +867,6 @@ function mostrarLugaresWikipedia(countryName) {
     });
   });
 
-  $("#wikiBtn").on("click", function () {
-    if (!window.selectedCountryCode) {
-      alert("Select a country first.");
-      return;
-    }
-    console.log("funciona")
-
-    const countryFeature = countryBordersData.features.find(
-      f => f.properties.iso_a2 === window.selectedCountryCode
-    );
-
-    if (!countryFeature) {
-      $('#wikiContent').html("Country info not found.");
-      return;
-    }
-
-    const countryName = countryFeature.properties.name;
-
-    $.ajax({
-      url: "libs/php/getWikiSummary.php?country=" + encodeURIComponent(countryName), method: "GET",
-      success: function (data) {
-        let html = `
-        <h5>${data.title}</h5>
-        <p>${data.extract}</p>
-        <a href="${data.content_urls.desktop.page}" target="_blank" class="btn btn-outline-info">Read more on Wikipedia</a>
-      `;
-
-        if (data.thumbnail) {
-          html = `<img src="${data.thumbnail.source}" alt="${data.title}" class="img-fluid mb-3" style="border-radius: 8px;" />` + html;
-        }
-
-        $('#wikiContent').html(html);
-        const modal = new bootstrap.Modal(document.getElementById('wikiModal'));
-        modal.show();
-      },
-      error: function () {
-        $('#wikiContent').html("Could not load Wikipedia info.");
-      }
-    });
-  });
-
-
 
   //loader
 
@@ -877,4 +904,5 @@ function mostrarLugaresWikipedia(countryName) {
 
 
 });
+
 
