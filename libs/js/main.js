@@ -410,7 +410,7 @@ $(document).ready(function () {
       method: 'GET',
       data: { country: countryName },
       dataType: 'json', success: function (response) {
-        const searchResults = response.query.search.slice(0, 100);
+        const searchResults = response.query.search.slice(0, 50);
         searchResults.forEach(result => {
           const title = result.title;
           console.log("🔍 Buscando Wikipedia para:", countryName);
