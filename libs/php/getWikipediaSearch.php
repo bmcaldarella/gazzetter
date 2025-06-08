@@ -8,7 +8,7 @@ if (!isset($_GET['country'])) {
 }
 
 $country = urlencode($_GET['country']);
-$url = "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=top+attractions+in+{$country}&format=json&origin=*";
+$url = "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=top+attractions+in+{$country}&format=json&origin=*&srlimit=100";
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $url);
@@ -25,4 +25,4 @@ if ($httpCode !== 200 || $response === false) {
 
 echo $response;
 
-?>
+

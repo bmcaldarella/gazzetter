@@ -30,7 +30,6 @@ html, body {
 }
 #countryInfoBtn,
 #weatherBtn,
-#nearbyBtn,
 #myLocationBtn,
 #currencyBtn,
 #wikiBtn,
@@ -59,9 +58,6 @@ html, body {
   top:24rem;     
 }
 
-#nearbyBtn{
-  top: 21rem;       
-}
 
 #myLocation,
 #myLocationBtn{
@@ -100,7 +96,8 @@ html, body {
 }
 
 #wikiBtn{
-  top: 33rem;   
+  top: 21rem;   
+ 
 }
 
 .three-body {

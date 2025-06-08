@@ -342,7 +342,8 @@ $(document).ready(function () {
         success: function (response) {
           if (response.geonames && response.geonames.length > 0) {
             const place = response.geonames[0];
-            const city = place.name;
+            const city = place.name || place.adminName1 || place.adminName2 || place.toponymName || 'Unknown City';
+
             const countryName = place.countryName;
             const countryCode = place.countryCode;
 
@@ -377,9 +378,14 @@ $(document).ready(function () {
             $('#countrySelect').val(countryCode);
 
             // Mostramos lugares de Wikipedia y ciudad
-           
+           console.log("🧭 Ciudad detectada:", city);
            if (city) {
   mostrarLimiteCiudad(city);
+  if (countryName) {
+  mostrarLugaresWikipedia(countryName);
+}
+
+
 } else {
   console.warn("No city name available, skipping city boundary display.");
 }
@@ -404,7 +410,7 @@ $(document).ready(function () {
       method: 'GET',
       data: { country: countryName },
       dataType: 'json', success: function (response) {
-        const searchResults = response.query.search.slice(0, 10);
+        const searchResults = response.query.search.slice(0, 100);
         searchResults.forEach(result => {
           const title = result.title;
           console.log("🔍 Buscando Wikipedia para:", countryName);
@@ -527,7 +533,11 @@ $(document).ready(function () {
     setTimeout(() => {
       if (poiClusterGroup.getLayers().length > 0) {
       const group = new L.featureGroup(poiClusterGroup.getLayers());
-        map.fitBounds(group.getBounds());
+      const bounds = group.getBounds();
+        map.fitBounds(bounds, {
+      maxZoom: 7, // ⬅️ Ajustá este número como quieras (5 = más lejos, 10 = más cerca)
+      padding: [50, 50] // Espacio alrededor de los puntos
+    });
       }
     }, 1000);
   });
