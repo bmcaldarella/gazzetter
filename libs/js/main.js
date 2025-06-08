@@ -33,7 +33,7 @@ function detectUserCountry(lat, lon) {
 
 function loadCountriesIntoSelect(callback) {
   $.ajax({
-    url: "libs/php/getCountryBorders.php", // ✅ Ruta al backend
+    url: "libs/php/getCountryBorders.php", 
     dataType: "json",
     success: function (data) {
       countriesLoaded = true;
@@ -145,7 +145,7 @@ $(document).ready(function () {
     }),
 
   };
-  $('#loader').fadeIn(200); // Mostrar loader desde el inicio
+  $('#loader').fadeIn(200); 
 
   loadCountriesIntoSelect(() => {
     if (navigator.geolocation) {
@@ -158,19 +158,19 @@ $(document).ready(function () {
           window.selectedLon = lon;
 
           detectUserCountry(lat, lon);
-          initMap([lat, lon], true); // vista centrada
+          initMap([lat, lon], true); 
           $('#map').fadeIn(300);
           $('#loader').fadeOut(500);
         },
         function (error) {
           console.warn("Geolocation error:", error.message);
-          initMap([20, 0], false); // vista global
+          initMap([20, 0], false); 
           $('#map').fadeIn(300);
           $('#loader').fadeOut(500);
         }
       );
     } else {
-      initMap([20, 0], false); // sin geolocalización
+      initMap([20, 0], false); 
       $('#map').fadeIn(300);
       $('#loader').fadeOut(500);
     }
@@ -304,7 +304,7 @@ $(document).ready(function () {
       attribution: '&copy; OpenStreetMap &copy; CARTO'
     });
 
-    ligthMode.addTo(map); // modo por defecto
+    ligthMode.addTo(map); 
 
     const baseMaps = {
       "🌞 Light": ligthMode,
@@ -357,7 +357,7 @@ $(document).ready(function () {
               .bindPopup(`<b>${city}, ${countryName}</b><br>Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`)
               .openPopup();
 
-            // Mostramos la frontera del país
+            // show borders countries
             if (countryBordersData) {
               const countryFeature = countryBordersData.features.find(
                 f => f.properties.iso_a2 === countryCode
@@ -374,11 +374,9 @@ $(document).ready(function () {
               }
             }
 
-            // Actualizamos el select manualmente SIN disparar 'change'
             $('#countrySelect').val(countryCode);
 
-            // Mostramos lugares de Wikipedia y ciudad
-           console.log("🧭 Ciudad detectada:", city);
+           console.log("🧭 City:", city);
            if (city) {
   mostrarLimiteCiudad(city);
   if (countryName) {
@@ -391,11 +389,11 @@ $(document).ready(function () {
 }
 
           } else {
-            alert("No se encontraron lugares cercanos.");
+            alert("No nearby places found.");
           }
         },
         error: function () {
-          alert("Error llamando al backend.");
+          alert("Error contacting backend.");
         }
       });
     });
@@ -450,7 +448,7 @@ $(document).ready(function () {
                     <h5 style="margin-bottom: 5px; font-size: 12px;">${title}</h5>
                     ${image ? `<img src="${image}" style="width: 100%; border-radius: 5px; margin-bottom: 5px;" />` : ""}
                     <p style="font-size: 13px; margin-bottom: 8px; line-height: 1.3;">${description.substring(0, 100)}...</p>
-                    <a href="${url}" target="_blank" style="color: #007bff; text-decoration: underline; font-weight: bold;">Ver más</a>
+                    <a href="${url}" target="_blank" style="color: #007bff; text-decoration: underline; font-weight: bold;">Read more</a>
                   </div>
                 `;
 
@@ -535,8 +533,8 @@ $(document).ready(function () {
       const group = new L.featureGroup(poiClusterGroup.getLayers());
       const bounds = group.getBounds();
         map.fitBounds(bounds, {
-      maxZoom: 7, // ⬅️ Ajustá este número como quieras (5 = más lejos, 10 = más cerca)
-      padding: [50, 50] // Espacio alrededor de los puntos
+      maxZoom: 7,
+      padding: [50, 50] 
     });
       }
     }, 1000);
@@ -836,7 +834,7 @@ $(document).ready(function () {
           <img src="${flag}" alt="${name}" style="max-width: 100%; height: auto; display: block; margin: 0 auto; object-fit: contain;" />
           <p><strong>Capital:</strong> ${capital}</p>
           <p><strong>Population:</strong> ${population}</p>
-          <p><strong>Región:</strong> ${region}</p>
+          <p><strong>Region:</strong> ${region}</p>
           <p><strong>Languages:</strong> ${languages}</p>
         </div>
       `;

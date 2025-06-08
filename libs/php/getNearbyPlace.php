@@ -1,7 +1,6 @@
 <?php
 header('Content-Type: application/json');
 
-// Verifica si llegan lat y lon
 if (!isset($_GET['lat']) || !isset($_GET['lon'])) {
   echo json_encode(["error" => "Missing coordinates"]);
   exit;
@@ -9,7 +8,7 @@ if (!isset($_GET['lat']) || !isset($_GET['lon'])) {
 
 $lat = $_GET['lat'];
 $lon = $_GET['lon'];
-$username = 'bmcaldarella'; // Tu nombre de usuario de GeoNames
+$username = 'bmcaldarella'; 
 
 $url = "http://api.geonames.org/findNearbyPlaceNameJSON?lat=$lat&lng=$lon&username=$username";
 
@@ -26,5 +25,4 @@ if (curl_errno($ch)) {
 
 curl_close($ch);
 
-// Muestra el resultado en bruto
 echo $response;

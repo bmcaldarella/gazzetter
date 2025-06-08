@@ -1,5 +1,4 @@
 <?php
-// getCountryNews.php
 header("Content-Type: application/json");
 
 if (!isset($_GET['country'])) {
@@ -21,14 +20,12 @@ $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $curlError = curl_error($ch);
 curl_close($ch);
 
-// ✅ Mostrar error cURL si lo hay
 if ($curlError) {
     http_response_code(500);
     echo json_encode(["error" => "cURL error: $curlError"]);
     exit;
 }
 
-// ✅ Mostrar contenido aunque sea error HTTP para debug
 if ($httpcode !== 200 || !$response) {
     http_response_code(500);
     echo json_encode([
