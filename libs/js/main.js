@@ -411,7 +411,7 @@ $(document).ready(function () {
         const searchResults = response.query.search.slice(0, 50);
         searchResults.forEach(result => {
           const title = result.title;
-          console.log("🔍 Buscando Wikipedia para:", countryName);
+          console.log("🔍 Looking for:", countryName);
 
           $.ajax({
             url: 'libs/php/getWikiInfo.php',
